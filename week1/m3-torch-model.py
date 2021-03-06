@@ -49,15 +49,20 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = self.drop0(self.pool0(self.bn0(F.relu(self.conv0(x))))) #layer 0
+        res = x
 
         #block1
         x = self.drop1_1(self.bn1_1(F.relu(self.conv1_1(x))))
         x = self.drop1_2(self.bn1_2(F.relu(self.conv1_2(x))))
+        x += res
         x = self.drop1_p(self.pool1(x))
+
+        res = x
 
         #block2
         x = self.drop2_1(self.bn2_1(F.relu(self.conv2_1(x))))
         x = self.drop2_2(self.bn2_2(F.relu(self.conv2_2(x))))
+        x += res
         x = self.drop2_p(self.pool2(x))
 
         x = F.avg_pool2d(x, x.shape[-2:])
@@ -66,7 +71,6 @@ class Net(nn.Module):
 
         return x
 
-#TODO:RESIDUAL
 
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
