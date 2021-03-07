@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as transforms
 from matplotlib.pyplot import imshow
+from torch.utils.tensorboard import SummaryWriter
 
 class Net(nn.Module):
     def __init__(self):
@@ -90,6 +91,8 @@ class custom_preprocess(object):
 
 def main():
 
+    writer = SummaryWriter()
+
     # Load datasets
     tv.transforms.Normalize
     DATASET_DIR = '~\\CVMaster\\Databases\\MIT_split'
@@ -133,6 +136,8 @@ def main():
 
             train_correct = 0
             val_correct = 0
+            train_loss = 0
+            val_loss = 0
             for i, data in enumerate(train_generator, 0):
                 # get the inputs; data is a list of [inputs, labels]
                 inputs, labels = data[0].to(device), data[1].to(device)
@@ -148,21 +153,30 @@ def main():
 
                 # Compute training accuracy
                 train_correct += (torch.max(outputs, dim=1).indices == labels).float().sum()
-
+                train_loss += loss.item()
+            
             # Compute val accuracy
             with torch.no_grad():
                 for i, data in enumerate(val_generator, 0):
                     inputs, labels = data[0].to(device), data[1].to(device)
                     outputs = model(inputs) # forward pass
-
+                    loss = criterion(outputs, labels) # calculate loss
                     val_correct += (torch.max(outputs, dim=1).indices == labels).float().sum()
+                    val_loss += loss.item()
 
 
-            accuracy = 100 * train_correct / len(train_dataset)
+
+            train_accuracy = 100 * train_correct / len(train_dataset)
             val_accuracy = 100 * val_correct / len(val_dataset)
 
+            writer.add_scalar('Loss/train', train_loss/len(train_dataset), epoch)
+            writer.add_scalar('Acc/train', train_accuracy, epoch)
+
+            writer.add_scalar('Loss/val', val_loss/len(val_dataset), epoch)
+            writer.add_scalar('Acc/val', val_accuracy, epoch)
+
             # print statistics
-            print(f'Epoch {epoch}. Training accuracy = {accuracy}. Validation accuracy = {val_accuracy}')
+            print(f'Epoch {epoch}. Training accuracy = {train_accuracy}. Validation accuracy = {val_accuracy}')
 
         print(f'Finished Training. Device: {device}. Elapsed time {round(time.time() - t0, 2)} s')
         # Save model
@@ -170,18 +184,10 @@ def main():
     else:
         model.load_state_dict(torch.load(MODEL_PATH)) # this is how you load a saved model
 
-    # test
-    dataiter = iter(test_generator)
-    ims, labels = dataiter.next()
-
-    idx = 17
-    imshow(np.moveaxis(ims[15].numpy(), 0, -1)) # imshow(tv.transforms.ToPILImage()(ims[0]))
-    print(CLASSES[labels[15].item()])
-    plt.show()
-
-    model.eval()
 
     # Test
+    model.eval() # disabled layers such as dropout or batchnorm (not used during inference)
+
     test_correct = 0
     with torch.no_grad():
         for data in test_generator:
