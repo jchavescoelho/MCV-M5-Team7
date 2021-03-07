@@ -72,9 +72,9 @@ class Net(nn.Module):
 
         return x
 
-MODEL_PATH = './models/m3-500.pth'
+MODEL_PATH = './models/m3-500-glorot.pth'
 BATCH_SIZE = 32
-LEARNING_RATE = 1e-5
+LEARNING_RATE = 1e-3
 EPOCHS = 500
 MOMENTUM = 0.99
 
@@ -88,6 +88,9 @@ class custom_preprocess(object):
     def __call__(self, im):
         return im
 
+def init_weights_glorot(m):
+    if m == nn.Conv2d:
+        torch.nn.init.xavier_uniform(m.weight)
 
 def main():
 
@@ -118,6 +121,7 @@ def main():
 
     # Instanciate model
     model = Net()
+    model.apply(init_weights_glorot)
 
     # GPU
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -195,7 +199,9 @@ def main():
     else:
         model.load_state_dict(torch.load(MODEL_PATH)) # this is how you load a saved model
 
-
+    num_parameters = sum(p.numel() for p in model.parameters())
+    num_train_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'Num parameters: {num_parameters} (trainable: {num_train_parameters})')
     # Test
     model.eval() # disabled layers such as dropout or batchnorm (not used during inference)
 
