@@ -71,7 +71,7 @@ class Net(nn.Module):
 
         return x
 
-MODEL_PATH = './m3-last.pth'
+MODEL_PATH = '.\\m3-last.pth'
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
 EPOCHS = 10
@@ -92,7 +92,7 @@ def main():
 
     # Load datasets
     tv.transforms.Normalize
-    DATASET_DIR = '~/code/uab_cv_master/m3/Databases/MIT_split'
+    DATASET_DIR = '~\\CVMaster\\Databases\\MIT_split'
 
     transfom_list = [tv.transforms.ToTensor(), tv.transforms.Resize((64, 64))]
 
@@ -101,8 +101,8 @@ def main():
     test_dataset = tv.datasets.ImageFolder(os.path.join(DATASET_DIR, 'test'), transform=tv.transforms.Compose(transfom_list))
 
     train_generator = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    val_generator = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True, num_workers=4)
-    test_generator = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=False, num_workers=4)
+    val_generator = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, drop_last=True, num_workers=4)
+    test_generator = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, drop_last=False, num_workers=4)
 
     # # Visualize dataset
     # train_it = iter(train_generator)
@@ -179,6 +179,7 @@ def main():
     print(CLASSES[labels[15].item()])
     plt.show()
 
+    model.eval()
 
     # Test
     test_correct = 0
