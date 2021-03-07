@@ -76,10 +76,10 @@ class Net(nn.Module):
 
         return x
 
-MODEL_PATH = './models/m3-100-eval.pth'
+MODEL_PATH = './models/m3-200-wtf.pth'
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-3
-EPOCHS = 100
+EPOCHS = 200
 MOMENTUM = 0.99
 
 CLASSES = ('coast', 'forest', 'highway', 'inside_city', 'mountain', 'opencountry', 'street', 'tallbuilding')
@@ -208,14 +208,8 @@ def main():
     num_train_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'Num parameters: {num_parameters} (trainable: {num_train_parameters})')
     
-    # Visualize
-    x = torch.rand(32, 3, 64, 64).to(device)
-    y = model(x)
-    im = make_dot(y.mean(), params=dict(model.named_parameters()))
-    Source(im).render('~/code/uab_cv_master/m5/project/MCV-M5-Team7/week1')
     # Test
     model.eval() # disabled layers such as dropout or batchnorm (not used during inference)
-
     test_correct = 0
     with torch.no_grad():
         for data in test_generator:
@@ -226,6 +220,11 @@ def main():
     test_accuracy = 100 * test_correct / len(test_dataset)
     print(f'Accuracy on test: {test_accuracy}')
 
+    # Visualize
+    x = torch.rand(32, 3, 64, 64).to(device)
+    y = model(x)
+    im = make_dot(y.mean(), params=dict(model.named_parameters()))
+    Source(im).render('model')
 
 if __name__ == '__main__':
     main()
