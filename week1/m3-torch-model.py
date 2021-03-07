@@ -72,10 +72,10 @@ class Net(nn.Module):
 
         return x
 
-MODEL_PATH = '.\\m3-last.pth'
+MODEL_PATH = './models/m3-500.pth'
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-5
-EPOCHS = 10
+EPOCHS = 500
 MOMENTUM = 0.99
 
 CLASSES = ('coast', 'forest', 'highway', 'inside_city', 'mountain', 'opencountry', 'street', 'tallbuilding')
@@ -95,7 +95,7 @@ def main():
 
     # Load datasets
     tv.transforms.Normalize
-    DATASET_DIR = '~\\CVMaster\\Databases\\MIT_split'
+    DATASET_DIR = '/home/capiguri/code/uab_cv_master/m3/Databases/MIT_split'
 
     transfom_list = [tv.transforms.ToTensor(), tv.transforms.Resize((64, 64))]
 
@@ -174,6 +174,17 @@ def main():
 
             writer.add_scalar('Loss/val', val_loss/len(val_dataset), epoch)
             writer.add_scalar('Acc/val', val_accuracy, epoch)
+
+            # all together now
+            writer.add_scalars(f'Accuracy', {
+                'Training': train_accuracy,
+                'Validation': val_accuracy,
+            }, epoch)
+
+            writer.add_scalars(f'Loss', {
+                'Training': train_loss/len(train_dataset),
+                'Validation': val_loss/len(val_dataset),
+            }, epoch)
 
             # print statistics
             print(f'Epoch {epoch}. Training accuracy = {train_accuracy}. Validation accuracy = {val_accuracy}')
