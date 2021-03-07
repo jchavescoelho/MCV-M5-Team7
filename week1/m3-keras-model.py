@@ -1,4 +1,5 @@
 import os
+import time 
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,7 +22,8 @@ from tensorflow.keras.callbacks import TensorBoard, LearningRateScheduler, Model
 #GROUP_DIR = './'
 
 GROUP_DIR = '.'
-MIT_SPLIT='/home/capiguri/code/uab_cv_master/m3/Databases/MIT_split'
+# MIT_SPLIT='/home/capiguri/code/uab_cv_master/m3/Databases/MIT_split'
+MIT_SPLIT='/data/MIT_split'
 
 # GROUP_DIR = '/home/group06/code/w4/'
 # MIT_SPLIT = '/home/mcv/datasets/MIT_split'
@@ -531,10 +533,10 @@ test_configurations=[
     # },
     {
     'name' : 'ImgSize64',
-    'subname': ['ResidualBottleneck1'],
+    'subname': ['SpeedTime'],
     'args' : [[]],
-    'epochs' : 200,
-    'model' : smaller_spdrop_residual_bottleneck,
+    'epochs' : 500,
+    'model' : smaller_spdrop_residual,
     'load': True
     },
 ]
@@ -618,11 +620,13 @@ for conf in test_configurations:
                 batch_size=batch_size,
                 class_mode='categorical')
 
-
+        t0 = time.time()
         history=model.fit(train_generator,
                 epochs=conf['epochs'],
                 validation_data=validation_generator,
                 callbacks=[tbCallBack, cp_callback])
+        
+        print('Done training. Training time:', time.time() - t0)
 
         result = model.evaluate(test_generator)
         print(f'Test {conf["name"]}_{subname} result:', result)

@@ -11,6 +11,10 @@ import torchvision.transforms as transforms
 from matplotlib.pyplot import imshow
 from torch.utils.tensorboard import SummaryWriter
 
+from graphviz import Source
+from torchviz import make_dot
+
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -72,10 +76,10 @@ class Net(nn.Module):
 
         return x
 
-MODEL_PATH = './models/m3-500-glorot.pth'
+MODEL_PATH = './models/m3-100-eval.pth'
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-3
-EPOCHS = 500
+EPOCHS = 100
 MOMENTUM = 0.99
 
 CLASSES = ('coast', 'forest', 'highway', 'inside_city', 'mountain', 'opencountry', 'street', 'tallbuilding')
@@ -160,6 +164,7 @@ def main():
                 train_loss += loss.item()
             
             # Compute val accuracy
+            model.eval()
             with torch.no_grad():
                 for i, data in enumerate(val_generator, 0):
                     inputs, labels = data[0].to(device), data[1].to(device)
@@ -168,7 +173,7 @@ def main():
                     val_correct += (torch.max(outputs, dim=1).indices == labels).float().sum()
                     val_loss += loss.item()
 
-
+            model.train()
 
             train_accuracy = 100 * train_correct / len(train_dataset)
             val_accuracy = 100 * val_correct / len(val_dataset)
@@ -202,6 +207,12 @@ def main():
     num_parameters = sum(p.numel() for p in model.parameters())
     num_train_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f'Num parameters: {num_parameters} (trainable: {num_train_parameters})')
+    
+    # Visualize
+    x = torch.rand(32, 3, 64, 64).to(device)
+    y = model(x)
+    im = make_dot(y.mean(), params=dict(model.named_parameters()))
+    Source(im).render('~/code/uab_cv_master/m5/project/MCV-M5-Team7/week1')
     # Test
     model.eval() # disabled layers such as dropout or batchnorm (not used during inference)
 
