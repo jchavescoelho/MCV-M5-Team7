@@ -1,7 +1,18 @@
 # MCV-M5-Team7
-Repository for the project for module 5: Visual Recognition.
+Repository for the project for module 5: Visual Recognition of group number 7 (name yet to be defined).
 
-# Docker
+## Team members
+- Lali Bibilashvili (<lalibibilashvili@gmail.com>)
+- Juan Chaves (<juanvictor.chaves@e-campus.uab.cat>)
+- Carmen García (<carmen.garciano@e-campus.uab.cat>)
+- Mohamed El Atiki (<moha.atiki@gmail.com>)
+
+## Overlaf project
+Our Overleaf report can be accessed [here](https://www.overleaf.com/read/hcdhhsfccgsk).
+
+# Help
+
+## Docker
 
 A simple Dockerfile with a working version of tensorflow+keras and torch (including pytorch) is available. I'm still quite noob with, so there surely is a better way of doing this
 
