@@ -1,0 +1,5 @@
+*models/
+*runs/
+*tensorboard_out/
+*.vscode
+*output
