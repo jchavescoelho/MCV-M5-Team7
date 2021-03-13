@@ -14,6 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from graphviz import Source
 from torchviz import make_dot
 
+import utils
 
 class Net(nn.Module):
     def __init__(self):
@@ -220,11 +221,13 @@ def main():
     test_accuracy = 100 * test_correct / len(test_dataset)
     print(f'Accuracy on test: {test_accuracy}')
 
+    utils.confusion_matrix(model, test_generator, CLASSES, device)
+    
     # Visualize
-    x = torch.rand(32, 3, 64, 64).to(device)
-    y = model(x)
-    im = make_dot(y.mean(), params=dict(model.named_parameters()))
-    Source(im).render('model')
+    # x = torch.rand(32, 3, 64, 64).to(device)
+    # y = model(x)
+    # im = make_dot(y.mean(), params=dict(model.named_parameters()))
+    # Source(im).render('model')
 
 if __name__ == '__main__':
     main()

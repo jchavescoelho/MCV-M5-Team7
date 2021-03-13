@@ -74,3 +74,46 @@ class M3Net(nn.Module):
         x = F.softmax(self.fc(x))
 
         return x
+
+def confusion_matrix(model, loader, classes, device='cpu'):
+    # model.to(device)
+
+    with torch.no_grad():
+        all_preds = torch.tensor([]).to(device)
+        all_labs = torch.tensor([]).to(device)
+
+        for data in loader:
+            inputs, labels = data[0].to(device), data[1].to(device)
+
+            preds = model(inputs)
+            all_preds = torch.cat(
+                (all_preds, preds)
+                ,dim=0
+            )
+            all_labs = torch.cat((all_labs, labels), dim=0)
+
+    print('LEN', all_preds.shape, all_labs.shape)
+
+    stacked = torch.stack(
+    (
+        all_labs
+        ,all_preds.argmax(dim=1)
+    )
+    ,dim=1
+    ).to('cpu')
+
+    cmt = torch.zeros(len(classes),len(classes), dtype=torch.int64)
+
+    for p in stacked:
+        tl, pl = p.tolist()
+        cmt[int(tl), int(pl)] += 1
+    
+
+    cmt = cmt.numpy()
+    print(cmt)
+
+    for i in range(cmt.shape[0]):
+        print(np.sum(cmt[i,:]))
+        cmt[i, :] = 100*cmt[i, :] / np.sum(cmt[i,:])
+    
+    print(cmt)
