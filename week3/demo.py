@@ -25,7 +25,6 @@ You can make a copy of this tutorial by "File -> Open in playground mode" and ma
 # !pip install torchvision==0.8.2
 
 import torch, torchvision
-print(torch.__version__, torch.cuda.is_available())
 # !gcc --version
 # opencv is pre-installed on colab
 
@@ -54,13 +53,13 @@ from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
+import os
 import cv2
 import torch
 import detectron2
 import pandas as pd
 
-GT_PATH = 'gt.txt'
-DET_PATH = 'det_mask_rcnn.txt'
+
 
 def txt_to_instance(path, im_size):
     """
@@ -88,29 +87,13 @@ def txt_to_instance(path, im_size):
     #     bbox = detectron2.structures.Boxes(torch.tensor([[x, y, w, h]]))
     return elements_per_frame
 
-roi = cv2.imread('roi.jpg')
-im_size = roi.shape[:2]
-coco_boxes = txt_to_instance(DET_PATH, im_size)
-
-coco_boxes[1].pred_boxes[0].area()
-
-coco_det_boxes = coco_boxes
-
-coco_gt_boxes = txt_to_instance(GT_PATH, im_size)
-
-eval = detectron2.evaluation.COCOEvaluator('data_val', ['bbox'], distributed=True, output_dir='out')
-
-o = eval.process(coco_gt_boxes, coco_det_boxes)
-print(o)
-
 """# Run a pre-trained detectron2 model
 
 We first download an image from the COCO dataset:
 """
 
-!wget http://images.cocodataset.org/val2017/000000439715.jpg -q -O input.jpg
+os.system('wget http://images.cocodataset.org/val2017/000000439715.jpg -q -O input.jpg')
 im = cv2.imread("./input.jpg")
-cv2_imshow(im)
 
 """Then, we create a detectron2 config and a detectron2 `DefaultPredictor` to run inference on this image."""
 
@@ -130,7 +113,8 @@ print(outputs["instances"].pred_boxes)
 # We can use `Visualizer` to draw the predictions on the image.
 v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
 out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-cv2_imshow(out.get_image()[:, :, ::-1])
+cv2.imwrite('sample_out.jpg', out.get_image()[:, :, ::-1])
+quit()
 
 """# Train on a custom dataset
 
@@ -146,8 +130,8 @@ Note that COCO dataset does not have the "balloon" category. We'll be able to re
 """
 
 # download, decompress the data
-!wget https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip
-!unzip balloon_dataset.zip > /dev/null
+os.system('wget https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip')
+os.system('unzip balloon_dataset.zip > /dev/null')
 
 """Register the balloon dataset to detectron2, following the [detectron2 custom dataset tutorial](https://detectron2.readthedocs.io/tutorials/datasets.html).
 Here, the dataset is in its custom format, therefore we write a function to parse it and prepare it into detectron2's standard format. User should write such a function when using a dataset in custom format. See the tutorial for more details.
@@ -210,11 +194,11 @@ balloon_metadata = MetadataCatalog.get("balloon_train")
 """
 
 dataset_dicts = get_balloon_dicts("balloon/train")
-for d in random.sample(dataset_dicts, 3):
+for d in random.sample(dataset_dicts, 1):
     img = cv2.imread(d["file_name"])
     visualizer = Visualizer(img[:, :, ::-1], metadata=balloon_metadata, scale=0.5)
     out = visualizer.draw_dataset_dict(d)
-    cv2_imshow(out.get_image()[:, :, ::-1])
+    cv2.imwrite('ballon.jpg', out.get_image()[:, :, ::-1])
 
 """## Train!
 
@@ -273,7 +257,7 @@ for d in random.sample(dataset_dicts, 3):
                    instance_mode=ColorMode.IMAGE_BW   # remove the colors of unsegmented pixels. This option is only available for segmentation models
     )
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    cv2_imshow(out.get_image()[:, :, ::-1])
+    cv2.imwrite('ballon_det.jpg', out.get_image()[:, :, ::-1])
 
 """We can also evaluate its performance using AP metric implemented in COCO API.
 This gives an AP of ~70. Not bad!
@@ -285,49 +269,3 @@ evaluator = COCOEvaluator("balloon_val", ("bbox", "segm"), False, output_dir="./
 val_loader = build_detection_test_loader(cfg, "balloon_val")
 print(inference_on_dataset(trainer.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
-
-# """# Other types of builtin models"""
-
-# # Inference with a keypoint detection model
-# cfg = get_cfg()   # get a fresh new config
-# cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
-# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7  # set threshold for this model
-# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml")
-# predictor = DefaultPredictor(cfg)
-# outputs = predictor(im)
-# v = Visualizer(im[:,:,::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
-# out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-# cv2_imshow(out.get_image()[:, :, ::-1])
-
-# # Inference with a panoptic segmentation model
-# cfg = get_cfg()
-# cfg.merge_from_file(model_zoo.get_config_file("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml"))
-# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml")
-# predictor = DefaultPredictor(cfg)
-# panoptic_seg, segments_info = predictor(im)["panoptic_seg"]
-# v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
-# out = v.draw_panoptic_seg_predictions(panoptic_seg.to("cpu"), segments_info)
-# cv2_imshow(out.get_image()[:, :, ::-1])
-
-# """# Run panoptic segmentation on a video"""
-
-# # This is the video we're going to process
-# from IPython.display import YouTubeVideo, display
-# video = YouTubeVideo("ll8TgCZ0plk", width=500)
-# display(video)
-
-# # Install dependencies, download the video, and crop 5 seconds for processing
-# !pip install youtube-dl
-# !pip uninstall -y opencv-python-headless opencv-contrib-python
-# !apt install python3-opencv  # the one pre-installed have some issues
-# !youtube-dl https://www.youtube.com/watch?v=ll8TgCZ0plk -f 22 -o video.mp4
-# !ffmpeg -i video.mp4 -t 00:00:06 -c:v copy video-clip.mp4
-
-# # Run frame-by-frame inference demo on this video (takes 3-4 minutes) with the "demo.py" tool we provided in the repo.
-# !git clone https://github.com/facebookresearch/detectron2
-# !python detectron2/demo/demo.py --config-file detectron2/configs/COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml --video-input video-clip.mp4 --confidence-threshold 0.6 --output video-output.mkv \
-#   --opts MODEL.WEIGHTS detectron2://COCO-PanopticSegmentation/panoptic_fpn_R_101_3x/139514519/model_final_cafdb1.pkl
-
-# # Download the results
-# from google.colab import files
-# files.download('video-output.mkv')
