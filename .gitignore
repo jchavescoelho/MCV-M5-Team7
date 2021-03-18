@@ -3,3 +3,4 @@
 *tensorboard_out/
 *.vscode
 *output
+*/__pycache__/
