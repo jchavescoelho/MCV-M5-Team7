@@ -146,7 +146,7 @@ def get_mots_dicts(ds_path, ds_name):
             ds_val_dicts = pickle.load(f)
         print('Done!')
 
-    return dataset_dicts
+    return ds_train_dicts, ds_val_dicts
 
 
 d = get_mots_dicts(MOTS_PATH, ds_name, train)
