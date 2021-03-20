@@ -47,7 +47,7 @@ def get_mots_dicts(ds_path, ds_name):
     if not os.path.exists(f'{PKLS_PATH}{ds_name}_train_dict.pkl') or not os.path.exists(f'{PKLS_PATH}{ds_name}_val_dict.pkl'):
         print("Pkl file does not exist. Generating dics from dataset:")
 
-        for idx, img_path in enumerate(glob.glob(f'{ds_path}*/*.jpg')):
+        for idx, img_path in enumerate(glob.glob(f'{ds_path}*/*.*g')):
             mask_path = img_path.replace('training', 'instances').replace('images', 'instances').replace('jpg', 'png')
 
             seq = int(mask_path.split('/')[-2])
