@@ -102,3 +102,24 @@ for d in random.sample(mots_train_dicts, 5):
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 print('What now?')
+
+# remap dataset class labels
+for dataset in [mots_train_dicts, mots_val_dicts]:
+    for image in dataset:
+        for obj in image['annotations']:
+            if obj['category_id'] == 0:
+                obj['category_id'] = 3
+            elif obj['category_id'] == 1:
+                obj['category_id'] = 2
+            elif obj['category_id'] == 2:
+                obj['category_id'] = 0
+
+# Evaluate
+
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.data import build_detection_test_loader
+
+evaluator = COCOEvaluator(ds_name + "_train", ("bbox",), False, output_dir="./output/")
+val_loader = build_detection_test_loader(cfg, ds_name + "_train")
+print(inference_on_dataset(trainer.model, val_loader, evaluator))
+# another equivalent way to evaluate the model is to use `trainer.test`
