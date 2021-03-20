@@ -53,11 +53,11 @@ def get_mots_dicts(path):
         record["width"] = width
 
         class_im, ids_im = im // 1000, im % 1000
-        class_im = class_im.astype(np.uint8)
-        ids_im = ids_im.astype(np.uint8)
 
         # Memory stuff
         del im
+        class_im = class_im.astype(np.uint8)
+        ids_im = ids_im.astype(np.uint8)
         # class_im = cv2.resize(class_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
         # ids_im = cv2.resize(ids_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
 
@@ -69,7 +69,7 @@ def get_mots_dicts(path):
         print('Objs in image:', id_list)
         print('Classes in image:', class_list)
 
-        if 2 not in class_list and 1 not in class_list:
+        if 1 not in class_list and 2 not in class_list:
             continue
 
         for id in id_list:
@@ -77,9 +77,11 @@ def get_mots_dicts(path):
             # print(f'{len(w[0])} matching points')
             px = w[1]
             py = w[0]
+
+            # Segmentation
             # pts = [(int(x), int(y)) for x,y in zip(px, py)]
             # poly = [i for p in pts for i in p]
-            print('Computed poly')
+            # print('Computed poly')
 
             bbox = [np.min(px), np.min(py), np.max(px), np.max(py)]
             category = class_im[bbox[1], bbox[0]]

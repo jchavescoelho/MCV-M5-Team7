@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH -n 4 # Number of cores
+#SBATCH -D /home/group07/code/MCV-M5-Team7/week3 # working directory
+#SBATCH -p mhigh # Partition to submit to
+#SBATCH --mem 8192 # 8GB memory
+#SBATCH --gres gpu:1 # Request of 1 gpu
+#SBATCH -o runout/output.txt # File to which STDOUT will be written
+#SBATCH -e runout/errors.txt # File to which STDERR will be written
+python parse_ds.py
