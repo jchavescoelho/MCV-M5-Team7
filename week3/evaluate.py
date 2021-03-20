@@ -96,7 +96,7 @@ for d in random.sample(mots_train_dicts, 5):
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
     name = os.path.split(d['file_name'])[-1]
-    saveto = '/home/group07/code/MCV-M5-Team7/week3/sampleinfer/gt_' + name
+    saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/gt_' + name
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 print('What now?')
