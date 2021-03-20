@@ -91,12 +91,14 @@ cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
 # cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/retinanet_R_50_FPN_3x.yaml")
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
 
+folder_name = model_zoo_yml.split('/')[-1].split('.')[0]
 
 # Training goes here
 if TRAIN:
     from detectron2.engine import DefaultTrainer
+    cfg.OUTPUT_DIR = os.path.join('models', folder_name)
     print('Configuring training...')
-    cfg.DATASETS.TRAIN = (ds_name + "_rain",)
+    cfg.DATASETS.TRAIN = (ds_name + "_train",)
     cfg.DATASETS.TEST = ()
     cfg.DATALOADER.NUM_WORKERS = 4
     cfg.SOLVER.IMS_PER_BATCH = 8
@@ -116,7 +118,6 @@ if TRAIN:
 
 # Random inferences
 predictor = DefaultPredictor(cfg)
-folder_name = model_zoo_yml.split('/')[-1].split('.')[0]
 os.makedirs(f'./sampleinfer/{folder_name}', exist_ok=True)
 
 print('Running some random inferences...')
