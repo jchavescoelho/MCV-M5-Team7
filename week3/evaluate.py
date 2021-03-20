@@ -47,17 +47,23 @@ MOTS_CLASSES = {
 dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
 
 if dataset_dicts == -1:
+    print('COuld not find pkl. Exiting')
     quit()
 
+print('Registering...')
 ds_name = 'mots_all'
 DatasetCatalog.register(ds_name, lambda : dataset_dicts)
 MetadataCatalog.get(ds_name).set(thing_classes=['ignore', 'car', 'pedestrian'])
 ds_metadata = MetadataCatalog.get(ds_name)
 
 # visualize
+print('Save some visualizations...')
 os.makedirs('./samplegt/', exist_ok=True)
 for d in random.sample(dataset_dicts, 3):
+    print('\n', d["file_name"])
     img = cv2.imread(d["file_name"])
     visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
     out = visualizer.draw_dataset_dict(d)
     cv2.imwrite('./samplegt/gt_'+d["file_name"], out.get_image()[:, :, ::-1])
+
+print('What now')
