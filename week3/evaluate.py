@@ -64,6 +64,9 @@ for d in random.sample(dataset_dicts, 3):
     img = cv2.imread(d["file_name"])
     visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
     out = visualizer.draw_dataset_dict(d)
-    cv2.imwrite('./samplegt/gt_'+d["file_name"], out.get_image()[:, :, ::-1])
+    name = os.path.split(d['file_name'])[-1]
+    saveto = '/home/group07/code/MCV-M5-Team7/week3/samplegt/gt_' + name
+    print(out.get_image()[:, :, ::-1])
+    cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 print('What now')
