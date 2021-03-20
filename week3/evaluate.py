@@ -44,12 +44,12 @@ MOTS_CLASSES = {
 
 # mots
 # train
+dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
+
 ds_name = 'mots_all'
-DatasetCatalog.register(ds_name, lambda d=d: ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH))
+DatasetCatalog.register(ds_name, lambda d=d: dataset_dicts)
 MetadataCatalog.get(ds_name).set(thing_classes=['car', 'pedestrian'])
 ds_metadata = MetadataCatalog.get(ds_name)
-
-dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
 
 # visualize
 os.makedirs('./samplegt/')
