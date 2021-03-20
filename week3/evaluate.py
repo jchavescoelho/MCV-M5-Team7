@@ -26,8 +26,6 @@ setup_logger()
 
 import parse_ds as ds
 
-
-
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
 PKLS_PATH = './pkls/'
@@ -52,7 +50,6 @@ ds_metadata = MetadataCatalog.get(ds_name+'_train')
 
 DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['ignore', 'car', 'pedestrian'])
-
 
 # visualize
 print('Save some visualizations...')
@@ -119,8 +116,7 @@ for dataset in [mots_train_dicts, mots_val_dicts]:
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-trainer = DefaultTrainer(cfg) 
 evaluator = COCOEvaluator(ds_name + "_train", ("bbox",), False, output_dir="./output/")
 val_loader = build_detection_test_loader(cfg, ds_name + "_train")
-print(inference_on_dataset(trainer.model, val_loader, evaluator))
+print(inference_on_dataset(predictor.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
