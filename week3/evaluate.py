@@ -119,6 +119,7 @@ for dataset in [mots_train_dicts, mots_val_dicts]:
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
+trainer = DefaultTrainer(cfg) 
 evaluator = COCOEvaluator(ds_name + "_train", ("bbox",), False, output_dir="./output/")
 val_loader = build_detection_test_loader(cfg, ds_name + "_train")
 print(inference_on_dataset(trainer.model, val_loader, evaluator))
