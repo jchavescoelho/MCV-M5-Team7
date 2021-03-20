@@ -92,11 +92,13 @@ for d in random.sample(mots_train_dicts, 5):
     file_name = d['file_name']
     im = cv2.imread(file_name)
     outputs = predictor(im)
+    # inst = outputs["instances"]
+    inst = isnt[inst.pred_classes == 0 or inst.pred_classes == 2]
     # instances = outputs["instances"][outputs["instances"].scores > 0.5]
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
-    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    out = v.draw_instance_predictions(inst.to("cpu"))
     name = os.path.split(d['file_name'])[-1]
-    saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/gt_' + name
+    saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/infer_' + name
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 print('What now?')
