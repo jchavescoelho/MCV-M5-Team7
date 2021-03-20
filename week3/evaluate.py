@@ -90,7 +90,7 @@ os.makedirs(f'./sampleinfer/{folder_name}', exist_ok=True)
 print('Running some random inferences...')
 for d in random.sample(mots_train_dicts, 5):
     file_name = d['file_name']
-    im = cv2.imread(os.path.join(img_dir, file_name))
+    im = cv2.imread(file_name)
     outputs = predictor(im)
     # instances = outputs["instances"][outputs["instances"].scores > 0.5]
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
