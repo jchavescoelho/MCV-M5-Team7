@@ -43,13 +43,25 @@ MOTS_CLASSES = {
 ds_name = 'kitti-mots'
 mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
 
+labels = set()
+# remap dataset class labels
+for dataset in [mots_train_dicts, mots_val_dicts]:
+    for image in dataset:
+        for obj in image['annotations']:
+            if obj['category_id'] == 1:
+                obj['category_id'] = 2
+            elif obj['category_id'] == 2:
+                obj['category_id'] = 0
+            labels.add(obj['category_id'])
+print('LABELS', labels)
+
 print('Registering...')
 DatasetCatalog.register(ds_name+'_train', lambda : mots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['ignore', 'car', 'pedestrian'])
+MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
 ds_metadata = MetadataCatalog.get(ds_name+'_train')
 
 DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
-MetadataCatalog.get(ds_name+'_val').set(thing_classes=['ignore', 'car', 'pedestrian'])
+MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
 # visualize
 print('Save some visualizations...')
@@ -98,19 +110,7 @@ for d in random.sample(mots_train_dicts, 5):
     saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/infer_' + name
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
-labels = set()
-# remap dataset class labels
-for dataset in [mots_train_dicts, mots_val_dicts]:
-    for image in dataset:
-        for obj in image['annotations']:
-            # if obj['category_id'] == 0:
-            #     obj['category_id'] = 3
-            # elif obj['category_id'] == 1:
-            #     obj['category_id'] = 2
-            # elif obj['category_id'] == 2:
-            #     obj['category_id'] = 0
-            labels.add(obj['category_id'])
-print('LABELS', labels)
+
 # Evaluate
 print('Evaluating...')
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
