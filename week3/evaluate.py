@@ -115,6 +115,8 @@ if TRAIN:
 
     print('Launching training...')
     trainer.train()
+    
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # path to the model we just trained
 
 # Random inferences
 predictor = DefaultPredictor(cfg)
