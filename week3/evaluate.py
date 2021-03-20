@@ -27,12 +27,10 @@ setup_logger()
 import parse_ds as ds
 
 
-MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/'
-MOTS_ALL_DICT_PATH = '/home/group07/code/save/mots_dict.pkl'
-MOTS_TRAIN_DICT_PATH = '/home/group07/code/save/mots_dict_train.pkl'
-MOTS_VAL_DICT_PATH = '/home/group07/code/save/mots_dict_val.pkl'
-KITTI_MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/KITTI-MOTS/'
-KITTI_MOTS_DICT = '/home/group07/code/save/kitti_mots_dict.pkl'
+
+MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 MOTS_CLASSES = {
     '0': 'background',
@@ -44,18 +42,22 @@ MOTS_CLASSES = {
 
 # mots
 # train
-dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
+ds_name = 'mots'
+mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(MOTS_PATH, ds_name)
 
 print('Registering...')
-ds_name = 'mots_all'
-DatasetCatalog.register(ds_name, lambda : dataset_dicts)
-MetadataCatalog.get(ds_name).set(thing_classes=['ignore', 'car', 'pedestrian'])
-ds_metadata = MetadataCatalog.get(ds_name)
+DatasetCatalog.register(ds_name+'_train', lambda : mots_train_dicts)
+MetadataCatalog.get(ds_name+'_train').set(thing_classes=['ignore', 'car', 'pedestrian'])
+ds_metadata = MetadataCatalog.get(ds_name+'_train')
+
+DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
+MetadataCatalog.get(ds_name+'_val').set(thing_classes=['ignore', 'car', 'pedestrian'])
+
 
 # visualize
 print('Save some visualizations...')
 os.makedirs('./samplegt/', exist_ok=True)
-for d in random.sample(dataset_dicts, 3):
+for d in random.sample(mots_train_dicts, 5):
     print('\n', d["file_name"])
     img = cv2.imread(d["file_name"])
     visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
