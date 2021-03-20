@@ -94,6 +94,8 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
 
 # Training goes here
 if TRAIN:
+    from detectron2.engine import DefaultTrainer
+    print('Configuring training...')
     cfg.DATASETS.TRAIN = (ds_name + "_rain",)
     cfg.DATASETS.TEST = ()
     cfg.DATALOADER.NUM_WORKERS = 4
@@ -104,10 +106,12 @@ if TRAIN:
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)  
 
+    print('Preparing training...')
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     trainer = DefaultTrainer(cfg) 
     trainer.resume_or_load(resume=False)
 
+    print('Launching training...')
     trainer.train()
 
 # Random inferences
