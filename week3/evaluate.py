@@ -101,15 +101,15 @@ for d in random.sample(mots_train_dicts, 5):
 print('What now?')
 
 # remap dataset class labels
-for dataset in [mots_train_dicts, mots_val_dicts]:
-    for image in dataset:
-        for obj in image['annotations']:
-            if obj['category_id'] == 0:
-                obj['category_id'] = 3
-            elif obj['category_id'] == 1:
-                obj['category_id'] = 2
-            elif obj['category_id'] == 2:
-                obj['category_id'] = 0
+# for dataset in [mots_train_dicts, mots_val_dicts]:
+#     for image in dataset:
+#         for obj in image['annotations']:
+#             if obj['category_id'] == 0:
+#                 obj['category_id'] = 3
+#             elif obj['category_id'] == 1:
+#                 obj['category_id'] = 2
+#             elif obj['category_id'] == 2:
+#                 obj['category_id'] = 0
 
 # Evaluate
 
