@@ -42,7 +42,6 @@ def get_mots_dicts(path, tset='train', dpath=None):
         with open(dpath, 'rb') as fp:
             mots_dict = pkl.load(fp)
         return mots_dict
-    return -1
 
     for idx, img_path in enumerate(glob.glob(MOTS_PATH + 'train/images/*/*.jpg')):
         mask_path = img_path.replace('images', 'instances').replace('jpg', 'png')
@@ -111,11 +110,11 @@ def get_mots_dicts(path, tset='train', dpath=None):
         print()
     return dataset_dicts
 
-d = get_mots_dicts(MOTS_PATH)
-print('Saving tp pkl...')
-with open('mots_dict.pkl', 'wb') as fp:
-    pkl.dump(d, fp)
-print('Done')
+# d = get_mots_dicts(MOTS_PATH)
+# print('Saving tp pkl...')
+# with open('mots_dict.pkl', 'wb') as fp:
+#     pkl.dump(d, fp)
+# print('Done')
 
 # ds_name = 'mots_test'
 # DatasetCatalog.register(ds_name, lambda d=d: get_mots_dicts(MOTS_PATH))

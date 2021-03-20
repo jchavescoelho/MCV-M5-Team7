@@ -46,10 +46,6 @@ MOTS_CLASSES = {
 # train
 dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
 
-if dataset_dicts == -1:
-    print('COuld not find pkl. Exiting')
-    quit()
-
 print('Registering...')
 ds_name = 'mots_all'
 DatasetCatalog.register(ds_name, lambda : dataset_dicts)
