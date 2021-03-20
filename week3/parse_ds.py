@@ -34,7 +34,7 @@ MOTS_CLASSES = {
     '10': 'ignore'
 }
 
-def get_mots_dicts(path, tset, dpath=None):
+def get_mots_dicts(path, tset='train', dpath=None):
     dataset_dicts = []
 
     if dpath:
