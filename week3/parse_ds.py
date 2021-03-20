@@ -34,8 +34,13 @@ MOTS_CLASSES = {
     '10': 'ignore'
 }
 
-def get_mots_dicts(path):
+def get_mots_dicts(path, tset, dpath=None):
     dataset_dicts = []
+
+    if dpath:
+        with open(dpath, 'rb') as fp:
+            mots_dict = pkl.load(fp)
+        return mots_dict
 
     for idx, img_path in enumerate(glob.glob(MOTS_PATH + 'train/images/*/*.jpg')):
         mask_path = img_path.replace('images', 'instances').replace('jpg', 'png')
