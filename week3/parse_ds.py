@@ -130,21 +130,21 @@ def get_mots_dicts(ds_path, ds_name):
             os.makedirs(PKLS_PATH)
 
         print(f'Saving ds in {PKLS_PATH}{ds_name}_train_dict.pkl...')
-        with open(f'{ds_name}_train_dict.pkl', 'wb') as fp:
+        with open(f'{PKLS_PATH}{ds_name}_train_dict.pkl', 'wb') as fp:
             pkl.dump(ds_train_dicts, fp)
         print('Done!')
 
         print(f'Saving ds in {PKLS_PATH}{ds_name}_val_dict.pkl...')
-        with open(f'{ds_name}_train_dict.pkl', 'wb') as fp:
+        with open(f'{PKLS_PATH}{ds_name}_val_dict.pkl', 'wb') as fp:
             pkl.dump(ds_val_dicts, fp)
         print('Done!')
 
     else:
         print(f'Loading ds from {PKLS_PATH}{ds_name}_train_dict.pkl...')
-        with open(f'{ds_name}_train_dict.pkl', 'rb') as f:
+        with open(f'{PKLS_PATH}{ds_name}_train_dict.pkl', 'rb') as f:
             ds_train_dicts = pkl.load(f)
             print(f'Loading ds from {PKLS_PATH}{ds_name}_val_dict.pkl...')
-        with open(f'{ds_name}_val_dict.pkl', 'rb') as f:
+        with open(f'{PKLS_PATH}{ds_name}_val_dict.pkl', 'rb') as f:
             ds_val_dicts = pkl.load(f)
         print('Done!')
 

@@ -42,8 +42,8 @@ MOTS_CLASSES = {
 
 # mots
 # train
-ds_name = 'mots'
-mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(MOTS_PATH, ds_name)
+ds_name = 'kitti-mots'
+mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
 
 print('Registering...')
 DatasetCatalog.register(ds_name+'_train', lambda : mots_train_dicts)
