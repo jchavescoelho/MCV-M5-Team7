@@ -48,11 +48,11 @@ dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
 
 ds_name = 'mots_all'
 DatasetCatalog.register(ds_name, lambda : dataset_dicts)
-MetadataCatalog.get(ds_name).set(thing_classes=['car', 'pedestrian'])
+MetadataCatalog.get(ds_name).set(thing_classes=['ignore', 'car', 'pedestrian'])
 ds_metadata = MetadataCatalog.get(ds_name)
 
 # visualize
-os.makedirs('./samplegt/')
+os.makedirs('./samplegt/', exist_ok=True)
 for d in random.sample(dataset_dicts, 3):
     img = cv2.imread(d["file_name"])
     visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
