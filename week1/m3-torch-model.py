@@ -47,6 +47,9 @@ class Net(nn.Module):
         self.fc = nn.Linear(64, 8)
 
         pass
+    
+    def bottleneck():
+        F.conv2d(x, (4), stride=1, padding=0)
 
     def forward(self, x):
         x = self.drop0(self.pool0(self.bn0(F.relu(self.conv0(x))))) #layer 0
@@ -54,6 +57,7 @@ class Net(nn.Module):
 
         #block1
         x = self.drop1_1(self.bn1_1(F.relu(self.conv1_1(x))))
+        
         x = self.drop1_2(self.bn1_2(F.relu(self.conv1_2(x))))
         x += res
         x = self.drop1_p(self.pool1(x))
@@ -70,6 +74,12 @@ class Net(nn.Module):
         x = x.view(-1, 64)
         x = F.softmax(self.fc(x))
 
+        return x
+    
+    def bottleneck_conv(dim_in, dim_out, x, dimred=0.5):
+      self.bottleneck_conv = nn.Conv2d(3, 64*dimred, 1, padding=0) #dim in, dim out, size ker
+        = nn.Conv2d(64*dimred, 64, 3, padding=1) 
+        = nn.Conv2d(64, 64, 1, padding=1) 
         return x
 
 MODEL_PATH = '.\\m3-last.pth'
