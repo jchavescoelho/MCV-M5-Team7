@@ -64,7 +64,39 @@ for d in random.sample(mots_train_dicts, 5):
     out = visualizer.draw_dataset_dict(d)
     name = os.path.split(d['file_name'])[-1]
     saveto = '/home/group07/code/MCV-M5-Team7/week3/samplegt/gt_' + name
-    print(out.get_image()[:, :, ::-1])
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
-print('What now')
+# Pre-trained
+print('Loading pre-trianed models...')
+cfg = get_cfg()
+
+#Select model
+
+model_zoo_yml = "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
+# cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/retinanet_R_50_FPN_3x.yaml"))
+cfg.merge_from_file(model_zoo.get_config_file(model_zoo_yml))
+
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
+
+# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/retinanet_R_50_FPN_3x.yaml")
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
+
+predictor = DefaultPredictor(cfg)
+
+# Random inferences
+folder_name = model_zoo_yml.split['/'][-1].split('.')[0]
+os.makedirs(f'./sampleinfer/{folder_name}', exist_ok=True)
+
+print('Saving some random inferences...')
+for d in random.sample(mots_train_dicts, 5):
+    file_name = d['file_name']
+    im = cv2.imread(os.path.join(img_dir, file_name))
+    outputs = predictor(im)
+    # instances = outputs["instances"][outputs["instances"].scores > 0.5]
+    v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
+    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    name = os.path.split(d['file_name'])[-1]
+    saveto = '/home/group07/code/MCV-M5-Team7/week3/sampleinfer/gt_' + name
+    cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
+
+print('What now?')
