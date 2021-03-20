@@ -44,15 +44,17 @@ def get_mots_dicts(ds_path, ds_name):
     if ds_name == 'mots':
         val_sets = [2]
 
-    if not os.path.exists(f'{PKLS_PATH}{ds_name}_dict.pkl'):
+    if not os.path.exists(f'{PKLS_PATH}{ds_name}_train_dict.pkl') or not os.path.exists(f'{PKLS_PATH}{ds_name}_val_dict.pkl'):
         print("Pkl file does not exist. Generating dics from dataset:")
 
         for idx, img_path in enumerate(glob.glob(f'{ds_path}*/*.jpg')):
-            mask_path = img_path.replace('training', 'instances')
-            mask_path = mask_path.replace('images', 'instances').replace('jpg', 'png')
+            mask_path = img_path.replace('training', 'instances').replace('images', 'instances').replace('jpg', 'png')
+
+            seq = int(mask_path.split('/')[-2])
 
             print(f'Images: {img_path}')
             print(f'Masks: {mask_path}')
+            print('seq:', seq)
 
             im = np.array(Image.open(mask_path))
             if im is None:
@@ -112,18 +114,18 @@ def get_mots_dicts(ds_path, ds_name):
                     objs.append(obj)
                     print('#')
 
-        record["annotations"] = objs
+            record["annotations"] = objs
 
-        if idx in val_sets:
-            ds_val_dicts.append(record)
-            print(fsize(sys.getsizeof(ds_val_dicts)))
-            print()
-        else:
-            ds_train_dicts(record)
-            print(fsize(sys.getsizeof(ds_train_dicts)))
-            print()
+            if seq in val_sets:
+                ds_val_dicts.append(record)
+                print(fsize(sys.getsizeof(ds_val_dicts)))
+                print()
+            else:
+                ds_train_dicts(record)
+                print(fsize(sys.getsizeof(ds_train_dicts)))
+                print()
 
-        #Saving dics
+        #Saving dicts
         if not os.path.exists(PKLS_PATH):
             os.makedirs(PKLS_PATH)
 
@@ -140,16 +142,16 @@ def get_mots_dicts(ds_path, ds_name):
     else:
         print(f'Loading ds from {PKLS_PATH}{ds_name}_train_dict.pkl...')
         with open(f'{ds_name}_train_dict.pkl', 'rb') as f:
-            ds_train_dicts = pickle.load(f)
+            ds_train_dicts = pkl.load(f)
             print(f'Loading ds from {PKLS_PATH}{ds_name}_val_dict.pkl...')
         with open(f'{ds_name}_val_dict.pkl', 'rb') as f:
-            ds_val_dicts = pickle.load(f)
+            ds_val_dicts = pkl.load(f)
         print('Done!')
 
     return ds_train_dicts, ds_val_dicts
 
 
-d = get_mots_dicts(MOTS_PATH, ds_name, train)
+# d = get_mots_dicts(MOTS_PATH, ds_name, train)
 
 # ds_name = 'mots_test'
 # DatasetCatalog.register(ds_name, lambda d=d: get_mots_dicts(MOTS_PATH))
