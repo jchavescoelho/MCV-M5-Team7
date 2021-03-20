@@ -93,7 +93,7 @@ for d in random.sample(mots_train_dicts, 5):
     im = cv2.imread(file_name)
     outputs = predictor(im)
     inst = outputs["instances"]
-    inst = inst[inst.pred_classes == 0]
+    inst = inst[(inst.pred_classes == 0) or (inst.pred_classes == 2)]
     # instances = outputs["instances"][outputs["instances"].scores > 0.5]
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
     out = v.draw_instance_predictions(inst.to("cpu"))
