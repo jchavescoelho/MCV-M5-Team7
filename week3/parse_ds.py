@@ -48,7 +48,7 @@ def get_mots_dicts(ds_path, ds_name):
         print("Pkl file does not exist. Generating dics from dataset:")
 
         for idx, img_path in enumerate(glob.glob(f'{ds_path}*/*.*g')):
-            mask_path = img_path.replace('training', 'instances').replace('images', 'instances').replace('jpg', 'png')
+            mask_path = img_path.replace('training', 'instances').replace('images', 'instances').replace('jpg', 'png').replace('image_02/', '')
 
             seq = int(mask_path.split('/')[-2])
 
