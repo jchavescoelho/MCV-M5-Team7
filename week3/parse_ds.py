@@ -25,7 +25,7 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 setup_logger()
 
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
-KITTI_MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/KITTI-MOTS/training/image_02/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
 PKLS_PATH = './pkls/'
 
 MOTS_CLASSES = {
