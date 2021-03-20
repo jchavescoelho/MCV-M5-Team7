@@ -100,7 +100,7 @@ def get_mots_dicts(ds_path, ds_name):
                 # print('Computed poly')
 
                 bbox = [np.min(px), np.min(py), np.max(px), np.max(py)]
-                category = class_im[bbox[1], bbox[0]]
+                category = class_im[py[0], px[0]]
                 print(f'id {id} is a {MOTS_CLASSES[str(category)]}')
 
                 if category == 1 or category == 2:
