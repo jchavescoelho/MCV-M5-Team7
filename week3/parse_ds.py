@@ -42,7 +42,8 @@ def get_mots_dicts(path, tset='train', dpath=None):
         with open(dpath, 'rb') as fp:
             mots_dict = pkl.load(fp)
         return mots_dict
-    
+    return -1
+
     for idx, img_path in enumerate(glob.glob(MOTS_PATH + 'train/images/*/*.jpg')):
         mask_path = img_path.replace('images', 'instances').replace('jpg', 'png')
         print(img_path)

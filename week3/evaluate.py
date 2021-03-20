@@ -46,6 +46,9 @@ MOTS_CLASSES = {
 # train
 dataset_dicts = ds.get_mots_dicts(MOTS_PATH, 'train', MOTS_ALL_DICT_PATH)
 
+if dataset_dicts == -1:
+    quit()
+
 ds_name = 'mots_all'
 DatasetCatalog.register(ds_name, lambda : dataset_dicts)
 MetadataCatalog.get(ds_name).set(thing_classes=['ignore', 'car', 'pedestrian'])
