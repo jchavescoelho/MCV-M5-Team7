@@ -121,7 +121,7 @@ def get_mots_dicts(ds_path, ds_name):
                 print(fsize(sys.getsizeof(ds_val_dicts)))
                 print()
             else:
-                ds_train_dicts(record)
+                ds_train_dicts.append(record)
                 print(fsize(sys.getsizeof(ds_train_dicts)))
                 print()
 
