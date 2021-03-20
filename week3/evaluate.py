@@ -67,7 +67,7 @@ for d in random.sample(mots_train_dicts, 5):
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 # Pre-trained
-print('Loading pre-trianed models...')
+print('Loading pre-trained models...')
 cfg = get_cfg()
 
 #Select model
@@ -84,10 +84,10 @@ cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
 predictor = DefaultPredictor(cfg)
 
 # Random inferences
-folder_name = model_zoo_yml.split['/'][-1].split('.')[0]
+folder_name = model_zoo_yml.split('/')[-1].split('.')[0]
 os.makedirs(f'./sampleinfer/{folder_name}', exist_ok=True)
 
-print('Saving some random inferences...')
+print('Running some random inferences...')
 for d in random.sample(mots_train_dicts, 5):
     file_name = d['file_name']
     im = cv2.imread(os.path.join(img_dir, file_name))
