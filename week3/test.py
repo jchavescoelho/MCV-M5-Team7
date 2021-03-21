@@ -24,6 +24,10 @@ import parse_ds as ds
 
 OUTPUT_DIR = './experiments'
 
+MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
+
 #Fine tuning config
 learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
 models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
