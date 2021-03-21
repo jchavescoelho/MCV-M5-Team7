@@ -88,8 +88,7 @@ for model in models:
 
         cfg = get_cfg()
         cfg.merge_from_file(model_zoo.get_config_file(model))
-        cfg.DATASETS.TRAIN = (dts,)
-        cfg.DATASETS.TEST = ()
+        cfg.DATASETS.TEST = (dts,)
         cfg.DATALOADER.NUM_WORKERS = 2
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
         cfg.SOLVER.IMS_PER_BATCH = 2
@@ -99,6 +98,8 @@ for model in models:
         cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # faster, and good enough for this toy dataset (default: 512)
         cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
+        
+
         predictor = DefaultPredictor(cfg)
 
         eval_name = f'{dts}_{model[15:-5]}_pretrained'
@@ -110,5 +111,5 @@ for model in models:
         trainer = DefaultTrainer(cfg) 
         trainer.resume_or_load(resume=False)
 
-        print(inference_on_dataset(trainer.model, val_loader, evaluator))
+        print(inference_on_dataset(predictor.model, val_loader, evaluator))
         # another equivalent way to evaluate the model is to use `trainer.test`
