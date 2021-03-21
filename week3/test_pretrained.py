@@ -31,6 +31,7 @@ PKLS_PATH = './pkls/'
 
 #config
 models = ["COCO-Detection/retinanet_R_50_FPN_3x.yaml", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"]
+datasets = []
 
 # Load/Register datasets
 ds_name = 'kitti-mots'
@@ -51,6 +52,8 @@ print('LABELS', labels)
 print('Registering...')
 DatasetCatalog.register(ds_name+'_val', lambda : kittimots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
+
+datasets.append(ds_name+'_val')
 
 ds_name = 'mots'
 mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(MOTS_PATH, ds_name)
@@ -74,35 +77,38 @@ print('Registering...')
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
+datasets.append(ds_name+'_val')
+
 # Inference should use the config with parameters that are used in training
 # cfg now already contains everything we've set previously. We changed it a little bit for inference:
 print('Evaluating...')
 
 for model in models:
+    for dts in datasets:
 
-    cfg = get_cfg()
-    cfg.merge_from_file(model_zoo.get_config_file(model))
-    cfg.DATASETS.TRAIN = (ds_name+'_val',)
-    cfg.DATASETS.TEST = ()
-    cfg.DATALOADER.NUM_WORKERS = 2
-    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
-    cfg.SOLVER.IMS_PER_BATCH = 2
-    cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-    cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
-    cfg.SOLVER.STEPS = []        # do not decay learning rate
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # faster, and good enough for this toy dataset (default: 512)
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
-    predictor = DefaultPredictor(cfg)
+        cfg = get_cfg()
+        cfg.merge_from_file(model_zoo.get_config_file(model))
+        cfg.DATASETS.TRAIN = (ds_name+'_val',)
+        cfg.DATASETS.TEST = ()
+        cfg.DATALOADER.NUM_WORKERS = 2
+        cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
+        cfg.SOLVER.IMS_PER_BATCH = 2
+        cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+        cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
+        cfg.SOLVER.STEPS = []        # do not decay learning rate
+        cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # faster, and good enough for this toy dataset (default: 512)
+        cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
+        predictor = DefaultPredictor(cfg)
 
-    eval_name = f'{ds_name}_val_{model[15:-5]}_pretrained'
+        eval_name = f'{ds_name}_val_{model[15:-5]}_pretrained'
 
-    os.makedirs(f'./output_eval_pretrained/{eval_name}', exist_ok=True)
-    evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval_pretrained/{eval_name}')
-    val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
+        os.makedirs(f'./output_eval_pretrained/{eval_name}', exist_ok=True)
+        evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval_pretrained/{eval_name}')
+        val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
 
-    trainer = DefaultTrainer(cfg) 
-    trainer.resume_or_load(resume=False)
+        trainer = DefaultTrainer(cfg) 
+        trainer.resume_or_load(resume=False)
 
-    print(inference_on_dataset(trainer.model, val_loader, evaluator))
-    # another equivalent way to evaluate the model is to use `trainer.test`
+        print(inference_on_dataset(trainer.model, val_loader, evaluator))
+        # another equivalent way to evaluate the model is to use `trainer.test`
