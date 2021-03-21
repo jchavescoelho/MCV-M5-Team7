@@ -74,11 +74,6 @@ print('Registering...')
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
-
-experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
-
-cfg.OUTPUT_DIR = os.path.join(OUTPUT_DIR, experiment_name)
-
 # Inference should use the config with parameters that are used in training
 # cfg now already contains everything we've set previously. We changed it a little bit for inference:
 print('Evaluating...')
