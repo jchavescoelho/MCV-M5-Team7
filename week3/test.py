@@ -20,6 +20,8 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
+import parse_ds as ds
+
 OUTPUT_DIR = './experiments'
 
 #Fine tuning config
@@ -78,14 +80,14 @@ MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'ca
 
 for lr in learn_rates:
     for model in models:
-        for ds in datasets:
+        for dts in datasets:
             for batch in batchs:
 
-                experiment_name = f'{ds}_{model[15:-5]}_lr{lr}_batch{batch}'
+                experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (ds,)
+                cfg.DATASETS.TRAIN = (dts,)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
