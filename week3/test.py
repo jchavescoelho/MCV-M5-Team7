@@ -72,8 +72,8 @@ for dataset in [mots_train_dicts, mots_val_dicts]:
             labels.add(obj['category_id'])
 print('LABELS', labels)
 
-allmots_train_dicts = {**kittimots_train_dicts, **mots_train_dicts}
-allmots_val_dicts = {**kittimots_val_dicts, **mots_val_dicts}
+allmots_train_dicts = kittimots_train_dicts + mots_train_dicts
+allmots_val_dicts = kittimots_val_dicts + mots_val_dicts
 
 print('Registering...')
 DatasetCatalog.register(ds_name+'_train', lambda : allmots_train_dicts)
