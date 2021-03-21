@@ -80,8 +80,10 @@ for lr in learn_rates:
     for model in models:
         for dts in datasets:
             for batch in batchs:
-
+                
                 experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
+
+                print(f'Now testing: {experiment_name}')
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
@@ -106,13 +108,14 @@ for lr in learn_rates:
                 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
                 predictor = DefaultPredictor(cfg)
 
-                eval_name = f'{ds_name}_val_{model[15:-5]}_lr{lr}_batch{batch}'
+                for ds_val in ['mots_val', 'kitti-mots_val']:
+                    eval_name = f'{ds_val}_{model[15:-5]}_lr{lr}_batch{batch}'
 
-                os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
-                evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
-                val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
-                
-                trainer = DefaultTrainer(cfg) 
-                trainer.resume_or_load(resume=False)
-                print(inference_on_dataset(trainer.model, val_loader, evaluator))
-                # another equivalent way to evaluate the model is to use `trainer.test`
+                    os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
+                    evaluator = COCOEvaluator(ds_val, ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
+                    val_loader = build_detection_test_loader(cfg, ds_val)
+                    
+                    trainer = DefaultTrainer(cfg) 
+                    trainer.resume_or_load(resume=False)
+                    print(inference_on_dataset(trainer.model, val_loader, evaluator))
+                    # another equivalent way to evaluate the model is to use `trainer.test`
