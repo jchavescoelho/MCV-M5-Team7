@@ -88,6 +88,7 @@ for lr in learn_rates:
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
+                cfg.DATASETS.TRAIN = (dts,)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
