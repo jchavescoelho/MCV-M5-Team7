@@ -88,7 +88,7 @@ for lr in learn_rates:
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (dts,)
+                cfg.DATASETS.TRAIN = (dts.replace('train', 'val'),)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
@@ -110,14 +110,14 @@ for lr in learn_rates:
                 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
                 predictor = DefaultPredictor(cfg)
 
-                for ds_val in ['mots_val', 'kitti-mots_val']:
-                    eval_name = f'{ds_val}_{model[15:-5]}_lr{lr}_batch{batch}'
+                ds_val = dts.replace('train', 'val')
+                eval_name = f'{ds_val}_{model[15:-5]}_lr{lr}_batch{batch}'
 
-                    os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
-                    evaluator = COCOEvaluator(ds_val, ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
-                    val_loader = build_detection_test_loader(cfg, ds_val)
-                    
-                    trainer = DefaultTrainer(cfg) 
-                    trainer.resume_or_load(resume=False)
-                    print(inference_on_dataset(trainer.model, val_loader, evaluator))
-                    # another equivalent way to evaluate the model is to use `trainer.test`
+                os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
+                evaluator = COCOEvaluator(ds_val, ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
+                val_loader = build_detection_test_loader(cfg, ds_val)
+                
+                trainer = DefaultTrainer(cfg) 
+                trainer.resume_or_load(resume=False)
+                print(inference_on_dataset(trainer.model, val_loader, evaluator))
+                # another equivalent way to evaluate the model is to use `trainer.test`
