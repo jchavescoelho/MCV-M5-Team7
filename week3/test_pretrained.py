@@ -30,8 +30,7 @@ KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
 PKLS_PATH = './pkls/'
 
 #config
-models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-datasets = ['mots_train', 'kitti-mots_train']
+models = ["COCO-Detection/retinanet_R_50_FPN_3x.yaml", "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"]
 
 # Load/Register datasets
 ds_name = 'kitti-mots'

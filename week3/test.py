@@ -111,5 +111,8 @@ for lr in learn_rates:
                 os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
                 evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
                 val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
+                
+                trainer = DefaultTrainer(cfg) 
+                trainer.resume_or_load(resume=False)
                 print(inference_on_dataset(trainer.model, val_loader, evaluator))
                 # another equivalent way to evaluate the model is to use `trainer.test`
