@@ -83,6 +83,7 @@ for model in models:
 
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(model))
+    cfg.DATASETS.TRAIN = (ds_name+'_val',)
     cfg.DATASETS.TEST = ()
     cfg.DATALOADER.NUM_WORKERS = 2
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
