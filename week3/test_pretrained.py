@@ -88,7 +88,7 @@ for model in models:
 
         cfg = get_cfg()
         cfg.merge_from_file(model_zoo.get_config_file(model))
-        cfg.DATASETS.TRAIN = (ds_name+'_val',)
+        cfg.DATASETS.TRAIN = (dts,)
         cfg.DATASETS.TEST = ()
         cfg.DATALOADER.NUM_WORKERS = 2
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
@@ -101,11 +101,11 @@ for model in models:
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
         predictor = DefaultPredictor(cfg)
 
-        eval_name = f'{ds_name}_val_{model[15:-5]}_pretrained'
+        eval_name = f'{dts}_{model[15:-5]}_pretrained'
 
         os.makedirs(f'./output_eval_pretrained/{eval_name}', exist_ok=True)
-        evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval_pretrained/{eval_name}')
-        val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
+        evaluator = COCOEvaluator(dts, ("bbox", ), False, output_dir=f'./output_eval_pretrained/{eval_name}')
+        val_loader = build_detection_test_loader(cfg, dts)
 
         trainer = DefaultTrainer(cfg) 
         trainer.resume_or_load(resume=False)
