@@ -8,7 +8,7 @@ setup_logger()
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
-from google.colab.patches import cv2_imshow
+#from google.colab.patches import cv2_imshow
 
 # import some common detectron2 utilities
 from detectron2 import model_zoo
@@ -19,7 +19,12 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 
 from detectron2.engine import DefaultTrainer
 
+import parse_ds as ds
+
 OUTPUT_DIR = './experiments'
+MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 #Fine tuning config
 learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
@@ -65,8 +70,8 @@ for dataset in [mots_train_dicts, mots_val_dicts]:
             labels.add(obj['category_id'])
 print('LABELS', labels)
 
-allmots_train_dicts = {**kittimots_train_dicts, **mots_train_dicts}
-allmots_val_dicts = {**kittimots_val_dicts, **mots_val_dicts}
+allmots_train_dicts = kittimots_train_dicts + mots_train_dicts
+allmots_val_dicts = kittimots_val_dicts + mots_val_dicts
 
 print('Registering...')
 DatasetCatalog.register(ds_name+'_train', lambda : allmots_train_dicts)
@@ -77,14 +82,14 @@ MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'ca
 
 for lr in learn_rates:
     for model in models:
-        for ds in datasets:
+        for dts in datasets:
             for batch in batchs:
 
-                experiment_name = f'{ds}_{model[15:-5]}_lr{lr}_batch{batch}'
+                experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (ds,)
+                cfg.DATASETS.TRAIN = (dts,)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
