@@ -31,7 +31,7 @@ PKLS_PATH = './pkls/'
 #Fine tuning config
 learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
 models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-datasets = ['mots_train', 'kitti-mots_train']
+datasets = ['mots_val', 'kitti-mots_val']
 batchs = [32, 64, 128, 254, 512]
 
 # Load/Register datasets
@@ -51,9 +51,6 @@ for dataset in [kittimots_train_dicts, kittimots_val_dicts]:
 print('LABELS', labels)
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : kittimots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : kittimots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
@@ -76,9 +73,6 @@ allmots_train_dicts = kittimots_train_dicts + mots_train_dicts
 allmots_val_dicts = kittimots_val_dicts + mots_val_dicts
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : allmots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
