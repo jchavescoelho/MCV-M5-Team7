@@ -31,7 +31,7 @@ PKLS_PATH = './pkls/'
 #Fine tuning config
 learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
 models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-datasets = ['mots_val', 'kitti-mots_val']
+datasets = ['mots_train', 'kitti-mots_train']
 batchs = [32, 64, 128, 254, 512]
 
 # Load/Register datasets
@@ -85,7 +85,6 @@ for lr in learn_rates:
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (dts,)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
@@ -107,8 +106,10 @@ for lr in learn_rates:
                 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
                 predictor = DefaultPredictor(cfg)
 
-                os.makedirs(f'./output_eval/{experiment_name}', exist_ok=True)
-                evaluator = COCOEvaluator(ds_name, ("bbox", "segm"), False, output_dir=f'./output_eval/{experiment_name}')
-                val_loader = build_detection_test_loader(cfg, ds_name)
+                eval_name = f'{ds_name}_val_{model[15:-5]}_lr{lr}_batch{batch}'
+
+                os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
+                evaluator = COCOEvaluator(f'{ds_name}_val', ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
+                val_loader = build_detection_test_loader(cfg, f'{ds_name}_val')
                 print(inference_on_dataset(trainer.model, val_loader, evaluator))
                 # another equivalent way to evaluate the model is to use `trainer.test`
