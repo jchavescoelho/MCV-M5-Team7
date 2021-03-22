@@ -26,8 +26,13 @@ from detectron2.utils.visualizer import ColorMode
 #import the COCO Evaluator to use the COCO Metrics
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
+import parse_ds as ds
 
 OUTPUT_DIR = './faster_test'
+
+MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 #Register dataset
 
