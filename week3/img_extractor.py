@@ -34,7 +34,7 @@ PKLS_PATH = './pkls/'
 #config
 model = "COCO-Detection/retinanet_R_50_FPN_3x.yaml"
 lr = 0.001
-datasets = 'mots'
+dataset = 'mots'
 batch = 256
 
 # Load/Register datasets
@@ -56,8 +56,6 @@ print('LABELS', labels)
 print('Registering...')
 DatasetCatalog.register(ds_name+'_val', lambda : kittimots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
-
-datasets.append(ds_name+'_val')
 
 ds_name = 'mots'
 mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(MOTS_PATH, ds_name)
@@ -81,7 +79,6 @@ print('Registering...')
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
-datasets.append(ds_name+'_val')
 
 # Inference should use the config with parameters that are used in training
 # cfg now already contains everything we've set previously. We changed it a little bit for inference:
@@ -95,10 +92,10 @@ cfg.DATASETS.TEST = (dts,)
 cfg.DATALOADER.NUM_WORKERS = 2
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
 cfg.SOLVER.IMS_PER_BATCH = 2
-cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+cfg.SOLVER.BASE_LR = lr  # pick a good LR
 cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
 cfg.SOLVER.STEPS = []        # do not decay learning rate
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128   # faster, and good enough for this toy dataset (default: 512)
+cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch   # faster, and good enough for this toy dataset (default: 512)
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
 
