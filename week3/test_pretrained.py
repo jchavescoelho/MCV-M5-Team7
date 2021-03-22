@@ -108,8 +108,5 @@ for model in models:
         evaluator = COCOEvaluator(dts, ("bbox", ), False, output_dir=f'./output_eval_pretrained/{eval_name}')
         val_loader = build_detection_test_loader(cfg, dts)
 
-        trainer = DefaultTrainer(cfg) 
-        trainer.resume_or_load(resume=False)
-
         print(inference_on_dataset(predictor.model, val_loader, evaluator))
         # another equivalent way to evaluate the model is to use `trainer.test`
