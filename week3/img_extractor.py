@@ -102,7 +102,7 @@ cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
 
 predictor = DefaultPredictor(cfg)
 
-os.makedirs(f'./img_best/{folder_name}', exist_ok=True)
+os.makedirs(f'./img_best/', exist_ok=True)
 
 print('Running some random inferences...')
 for d in random.sample(mots_train_dicts, 5):
@@ -115,7 +115,7 @@ for d in random.sample(mots_train_dicts, 5):
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
     out = v.draw_instance_predictions(inst.to("cpu"))
     name = os.path.split(d['file_name'])[-1]
-    saveto = f'/home/group07/code/MCV-M5-Team7/week3/img_best/{folder_name}/infer_' + name
+    saveto = f'/home/group07/code/MCV-M5-Team7/week3/img_best/infer_' + name
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 
