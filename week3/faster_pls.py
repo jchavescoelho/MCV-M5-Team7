@@ -24,7 +24,7 @@ import os
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
-from detectron2.engine import CocoTrainer
+from detectron2.engine import DefaultTrainer
 
 #import the COCO Evaluator to use the COCO Metrics
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
@@ -90,7 +90,7 @@ cfg.TEST.EVAL_PERIOD = 300 # No. of iterations after which the Validation Set is
 
 
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-trainer = CocoTrainer(cfg) 
+trainer = DefaultTrainer(cfg) 
 trainer.resume_or_load(resume=False)
 trainer.train()
 
