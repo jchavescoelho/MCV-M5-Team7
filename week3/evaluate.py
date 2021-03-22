@@ -26,18 +26,10 @@ setup_logger()
 
 import parse_ds as ds
 
-<<<<<<< HEAD
-
-
-MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
-KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls/'
-=======
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
 PKLS_PATH = './pkls/'
 TRAIN = True
->>>>>>> ea5e7eb909b43829db845fa2d016fa31f1ac8d4e
 
 MOTS_CLASSES = {
     '0': 'background',
@@ -52,16 +44,6 @@ MOTS_CLASSES = {
 ds_name = 'kitti-mots'
 mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
 
-<<<<<<< HEAD
-print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : mots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['ignore', 'car', 'pedestrian'])
-ds_metadata = MetadataCatalog.get(ds_name+'_train')
-
-DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
-MetadataCatalog.get(ds_name+'_val').set(thing_classes=['ignore', 'car', 'pedestrian'])
-
-=======
 labels = set()
 # remap dataset class labels
 for dataset in [mots_train_dicts, mots_val_dicts]:
@@ -81,7 +63,6 @@ ds_metadata = MetadataCatalog.get(ds_name+'_train')
 
 DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
->>>>>>> ea5e7eb909b43829db845fa2d016fa31f1ac8d4e
 
 # visualize
 print('Save some visualizations...')
@@ -178,4 +159,9 @@ evaluator = COCOEvaluator(ds_name + "_val", ("bbox",), False, output_dir="./outp
 val_loader = build_detection_test_loader(cfg, ds_name + "_val")
 print(inference_on_dataset(predictor.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
+<<<<<<< HEAD
 >>>>>>> ea5e7eb909b43829db845fa2d016fa31f1ac8d4e
+=======
+
+
+>>>>>>> 8d523691c423b0cb80c322dcf70214d75cd54e6e
