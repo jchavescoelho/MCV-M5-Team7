@@ -24,6 +24,8 @@ import os
 from detectron2.utils.visualizer import ColorMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
+from detectron2.engine import CocoTrainer
+
 #import the COCO Evaluator to use the COCO Metrics
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
