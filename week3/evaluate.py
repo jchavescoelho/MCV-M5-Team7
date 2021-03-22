@@ -149,3 +149,5 @@ evaluator = COCOEvaluator(ds_name + "_val", ("bbox",), False, output_dir="./outp
 val_loader = build_detection_test_loader(cfg, ds_name + "_val")
 print(inference_on_dataset(predictor.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
+
+

@@ -115,7 +115,7 @@ predictor = DefaultPredictor(cfg)
 #     v = v.draw_instance_predictions(outputs["instances"].to("cpu")) #Passing the predictions to CPU from the GPU
 #     cv2_imshow(v.get_image()[:, :, ::-1])
 
-
+# evaluat = DefaultTrainer.test(evaluators=)
 #Call the COCO Evaluator function and pass the Validation Dataset
 evaluator = COCOEvaluator(ds_name+'_val', cfg, False, output_dir="/output_faster/")
 val_loader = build_detection_test_loader(cfg, ds_name+'_val')
