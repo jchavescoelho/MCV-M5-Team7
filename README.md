@@ -1,10 +1,12 @@
 # MCV-M5-Team7
 Repository for the project for module 5: Visual Recognition of group number 7 (name yet to be defined).
 
+Week 3 presentation: [google slides](https://docs.google.com/presentation/d/1--7MbWl71W3U5sLoO-SUNBETfq-5ur9yv5PA_siLZw8/edit?usp=sharing)
+
 ## Team members
-- Lali Bibilashvili (<lalibibilashvili@gmail.com>)
 - Juan Chaves (<juanvictor.chaves@e-campus.uab.cat>)
 - Carmen García (<carmen.garciano@e-campus.uab.cat>)
+- 
 - Mohamed El Atiki (<moha.atiki@gmail.com>)
 
 ## Overlaf project
