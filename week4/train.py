@@ -24,13 +24,16 @@ import parse_ds as ds
 OUTPUT_DIR = './experiments'
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls/'
 
 #Fine tuning config
-learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
-models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-datasets = ['mots_train', 'kitti-mots_train']
-batchs = [32, 64, 128, 254, 512]
+# learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
+learn_rates = [0.001]
+# models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
+models = ["COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
+# datasets = ['mots_train', 'kitti-mots_train']
+datasets = ['kitti-mots_train']
+# batchs = [32, 64, 128, 254, 512]
+batchs = [128]
 
 # Load/Register datasets
 ds_name = 'kitti-mots'
@@ -40,6 +43,9 @@ labels = set()
 # remap dataset class labels
 for dataset in [kittimots_train_dicts, kittimots_val_dicts]:
     for image in dataset:
+        image["height"] = image["height"] // 2 # using the half
+        image["width"] = image["width"] // 2
+
         for obj in image['annotations']:
             if obj['category_id'] == 1:
                 obj['category_id'] = 2

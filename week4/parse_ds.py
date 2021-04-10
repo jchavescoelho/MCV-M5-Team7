@@ -26,7 +26,7 @@ setup_logger()
 
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls_seg/'
+PKLS_PATH = './pkls_half/'
 
 MOTS_CLASSES = {
     '0': 'background',
@@ -74,8 +74,11 @@ def get_mots_dicts(ds_path, ds_name):
             del im
             class_im = class_im.astype(np.uint8)
             ids_im = ids_im.astype(np.uint8)
-            class_im = cv2.resize(class_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
-            ids_im = cv2.resize(ids_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
+
+            f = 0.5
+            new_size = (int(width*f), int(height*f))
+            class_im = cv2.resize(class_im, new_size, interpolation=cv2.INTER_NEAREST)
+            ids_im = cv2.resize(ids_im, new_size, interpolation=cv2.INTER_NEAREST)
 
             class_list = np.unique(class_im)
             id_list = np.unique(ids_im)
