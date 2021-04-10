@@ -130,6 +130,7 @@ for d in random.sample(mots_train_dicts, 5):
     file_name = d['file_name']
     im = cv2.imread(file_name)
     outputs = predictor(im)
+
     inst = outputs["instances"].to('cpu')
     inst = inst[[True if c == 0 or c == 2 else False for c in inst.pred_classes]]
     # instances = outputs["instances"][outputs["instances"].scores > 0.5]

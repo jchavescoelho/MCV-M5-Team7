@@ -9,7 +9,6 @@ setup_logger()
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
-from google.colab.patches import cv2_imshow
 
 # import some common detectron2 utilities
 from detectron2 import model_zoo
@@ -18,10 +17,17 @@ from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
+from detectron2.engine import DefaultTrainer
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
+import parse_ds as ds
+
 OUTPUT_DIR = './experiments'
+
+MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 #Fine tuning config
 learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
@@ -46,9 +52,6 @@ for dataset in [kittimots_train_dicts, kittimots_val_dicts]:
 print('LABELS', labels)
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : kittimots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : kittimots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
@@ -67,26 +70,25 @@ for dataset in [mots_train_dicts, mots_val_dicts]:
             labels.add(obj['category_id'])
 print('LABELS', labels)
 
-allmots_train_dicts = {**kittimots_train_dicts, **mots_train_dicts}
-allmots_val_dicts = {**kittimots_val_dicts, **mots_val_dicts}
+allmots_train_dicts = kittimots_train_dicts + mots_train_dicts
+allmots_val_dicts = kittimots_val_dicts + mots_val_dicts
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : allmots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
 for lr in learn_rates:
     for model in models:
-        for ds in datasets:
+        for dts in datasets:
             for batch in batchs:
+                
+                experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
 
-                experiment_name = f'{ds}_{model[15:-5]}_lr{lr}_batch{batch}'
+                print(f'Now testing: {experiment_name}')
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (ds,)
+                cfg.DATASETS.TRAIN = (dts.replace('train', 'val'),)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
@@ -108,8 +110,14 @@ for lr in learn_rates:
                 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
                 predictor = DefaultPredictor(cfg)
 
-                os.makedirs(f'./output_eval/{experiment_name}', exist_ok=True)
-                evaluator = COCOEvaluator(ds_name, ("bbox", "segm"), False, output_dir=f'./output_eval/{experiment_name}')
-                val_loader = build_detection_test_loader(cfg, ds_name)
+                ds_val = dts.replace('train', 'val')
+                eval_name = f'{ds_val}_{model[15:-5]}_lr{lr}_batch{batch}'
+
+                os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
+                evaluator = COCOEvaluator(ds_val, ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
+                val_loader = build_detection_test_loader(cfg, ds_val)
+                
+                trainer = DefaultTrainer(cfg) 
+                trainer.resume_or_load(resume=False)
                 print(inference_on_dataset(trainer.model, val_loader, evaluator))
                 # another equivalent way to evaluate the model is to use `trainer.test`
