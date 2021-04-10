@@ -74,36 +74,35 @@ def get_mots_dicts(ds_path, ds_name):
             del im
             class_im = class_im.astype(np.uint8)
             ids_im = ids_im.astype(np.uint8)
-            # class_im = cv2.resize(class_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
-            # ids_im = cv2.resize(ids_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
+            class_im = cv2.resize(class_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
+            ids_im = cv2.resize(ids_im, (width//2, height//2), interpolation=cv2.INTER_NEAREST)
 
             class_list = np.unique(class_im)
             id_list = np.unique(ids_im)
 
             objs = []
 
-            print('Objs in image:', id_list)
-            print('Classes in image:', class_list)
-
             if 1 not in class_list and 2 not in class_list:
                 continue
 
+            print('Objs in image:', id_list)
+            print('Classes in image:', class_list)
+
             for id in id_list:
                 w = np.where(ids_im == id)
-                # print(f'{len(w[0])} matching points')
-                px = w[1]
-                py = w[0]
 
                 # Segmentation
-                pts = [(int(x), int(y)) for x,y in zip(px, py)]
+                pts = [(int(x), int(y)) for x,y in zip(w[1], w[0])]
                 poly = [i for p in pts for i in p]
+                del pts
                 # print('Computed poly')
 
-                bbox = [np.min(px), np.min(py), np.max(px), np.max(py)]
-                category = class_im[py[0], px[0]]
-                print(f'id {id} is a {MOTS_CLASSES[str(category)]}')
+                bbox = [np.min(w[1]), np.min(w[0]), np.max(w[1]), np.max(w[0])]
+                category = class_im[w[0][0], w[1][0]]
 
                 if category == 1 or category == 2:
+
+                    print(f'id {id} is a {MOTS_CLASSES[str(category)]}')
                     obj = {
                         "bbox": bbox,
                         "bbox_mode": BoxMode.XYXY_ABS,
