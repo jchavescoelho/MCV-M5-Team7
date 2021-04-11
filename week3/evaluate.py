@@ -130,7 +130,7 @@ for d in random.sample(mots_train_dicts, 5):
     file_name = d['file_name']
     im = cv2.imread(file_name)
     outputs = predictor(im)
-<<<<<<< HEAD
+
     # instances = outputs["instances"][outputs["instances"].scores > 0.5]
     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
@@ -139,15 +139,6 @@ for d in random.sample(mots_train_dicts, 5):
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 print('What now?')
-=======
-    inst = outputs["instances"].to('cpu')
-    inst = inst[[True if c == 0 or c == 2 else False for c in inst.pred_classes]]
-    # instances = outputs["instances"][outputs["instances"].scores > 0.5]
-    v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
-    out = v.draw_instance_predictions(inst.to("cpu"))
-    name = os.path.split(d['file_name'])[-1]
-    saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/infer_' + name
-    cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 
 # Evaluate
@@ -159,9 +150,4 @@ evaluator = COCOEvaluator(ds_name + "_val", ("bbox",), False, output_dir="./outp
 val_loader = build_detection_test_loader(cfg, ds_name + "_val")
 print(inference_on_dataset(predictor.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
-<<<<<<< HEAD
->>>>>>> ea5e7eb909b43829db845fa2d016fa31f1ac8d4e
-=======
 
-
->>>>>>> 8d523691c423b0cb80c322dcf70214d75cd54e6e
