@@ -75,7 +75,7 @@ def get_mots_dicts(ds_path, ds_name):
             class_im = class_im.astype(np.uint8)
             ids_im = ids_im.astype(np.uint8)
 
-            f = 0.5
+            f = 1
             new_size = (int(width*f), int(height*f))
             class_im = cv2.resize(class_im, new_size, interpolation=cv2.INTER_NEAREST)
             ids_im = cv2.resize(ids_im, new_size, interpolation=cv2.INTER_NEAREST)
