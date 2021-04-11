@@ -1,3 +1,4 @@
+
 # Some basic setup:
 # Setup detectron2 logger
 import detectron2
@@ -8,7 +9,6 @@ setup_logger()
 # import some common libraries
 import numpy as np
 import os, json, cv2, random
-#from google.colab.patches import cv2_imshow
 
 # import some common detectron2 utilities
 from detectron2 import model_zoo
@@ -18,22 +18,22 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 from detectron2.engine import DefaultTrainer
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.data import build_detection_test_loader
 
 import parse_ds as ds
 
 OUTPUT_DIR = './experiments'
+
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 #Fine tuning config
-# learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
-learn_rates = [0.001]
-# models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-models = ["COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
-# datasets = ['mots_train', 'kitti-mots_train']
-datasets = ['kitti-mots_train']
-# batchs = [32, 64, 128, 254, 512]
-batchs = [128]
+learn_rates = [0.00025, 0.0005, 0.001, 0.01, 0.1, 1]
+models = ["COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", "COCO-Detection/retinanet_R_50_FPN_3x.yaml"]
+datasets = ['mots_train', 'kitti-mots_train']
+batchs = [32, 64, 128, 254, 512]
 
 # Load/Register datasets
 ds_name = 'kitti-mots'
@@ -43,9 +43,6 @@ labels = set()
 # remap dataset class labels
 for dataset in [kittimots_train_dicts, kittimots_val_dicts]:
     for image in dataset:
-        image["height"] = image["height"] // 2 # using the half
-        image["width"] = image["width"] // 2
-
         for obj in image['annotations']:
             if obj['category_id'] == 1:
                 obj['category_id'] = 2
@@ -55,9 +52,6 @@ for dataset in [kittimots_train_dicts, kittimots_val_dicts]:
 print('LABELS', labels)
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : kittimots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : kittimots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
@@ -80,9 +74,6 @@ allmots_train_dicts = kittimots_train_dicts + mots_train_dicts
 allmots_val_dicts = kittimots_val_dicts + mots_val_dicts
 
 print('Registering...')
-DatasetCatalog.register(ds_name+'_train', lambda : allmots_train_dicts)
-MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'bike', 'car'])
-
 DatasetCatalog.register(ds_name+'_val', lambda : allmots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
@@ -90,12 +81,14 @@ for lr in learn_rates:
     for model in models:
         for dts in datasets:
             for batch in batchs:
-
+                
                 experiment_name = f'{dts}_{model[15:-5]}_lr{lr}_batch{batch}'
+
+                print(f'Now testing: {experiment_name}')
 
                 cfg = get_cfg()
                 cfg.merge_from_file(model_zoo.get_config_file(model))
-                cfg.DATASETS.TRAIN = (dts,)
+                cfg.DATASETS.TRAIN = (dts.replace('train', 'val'),)
                 cfg.DATASETS.TEST = ()
                 cfg.DATALOADER.NUM_WORKERS = 4
                 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model)  # Let training initialize from model zoo
@@ -106,14 +99,25 @@ for lr in learn_rates:
                 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch   # faster, and good enough for this toy dataset (default: 512)
                 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2  # only has one class (ballon). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
                 # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
-                
-                cfg.INPUT.MAX_SIZE_TRAIN: 2048
-                cfg.INPUT.MIN_SIZE_TEST: 1024
-                cfg.INPUT.MAX_SIZE_TEST: 2048
 
                 cfg.OUTPUT_DIR = os.path.join(OUTPUT_DIR, experiment_name)
-                os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+                
+                # Inference should use the config with parameters that are used in training
+                # cfg now already contains everything we've set previously. We changed it a little bit for inference:
+                print('Evaluating...')
 
+                cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # path to the model we just trained
+                cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set a custom testing threshold
+                predictor = DefaultPredictor(cfg)
+
+                ds_val = dts.replace('train', 'val')
+                eval_name = f'{ds_val}_{model[15:-5]}_lr{lr}_batch{batch}'
+
+                os.makedirs(f'./output_eval/{eval_name}', exist_ok=True)
+                evaluator = COCOEvaluator(ds_val, ("bbox", ), False, output_dir=f'./output_eval/{eval_name}')
+                val_loader = build_detection_test_loader(cfg, ds_val)
+                
                 trainer = DefaultTrainer(cfg) 
                 trainer.resume_or_load(resume=False)
-                trainer.train()
+                print(inference_on_dataset(trainer.model, val_loader, evaluator))
+                # another equivalent way to evaluate the model is to use `trainer.test`
