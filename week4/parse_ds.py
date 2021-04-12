@@ -26,7 +26,8 @@ setup_logger()
 
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls_half/'
+KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
+PKLS_PATH = './pkls/'
 
 MOTS_CLASSES = {
     '0': 'background',
