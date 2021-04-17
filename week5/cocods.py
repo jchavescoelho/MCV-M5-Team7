@@ -41,7 +41,13 @@ def get_random_col():
     r,g,b = [int(256*i) for i in colorsys.hls_to_rgb(h,l,s)]
     return (b, g, r)
 
-def paint_detections(im, det, score_thresh=0.8):
+def overlay(img_ol, mask_ol, alpha=0.6):
+    pts = np.where((mask_ol != [0]))
+    img_ol[pts] = (img_ol[pts]*(1 - alpha) + mask_ol[pts]*alpha).astype(np.uint8)
+    return img_ol
+
+def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
+    colors = []
     if 'boxes' in det:
 
         for bbox, lab, score in zip(det['boxes'], det['labels'], det['scores']):
@@ -65,6 +71,27 @@ def paint_detections(im, det, score_thresh=0.8):
                 # Print name, id and conf
                 cv2.putText(im, text, (x1, int(y1+0.15*h)), cv2.FONT_HERSHEY_COMPLEX_SMALL, get_optimal_font_scale(text, 0.7*w), (0,0,0))
 
+    if 'masks' in det:
+        print('Drawing masks...')
+
+        out = np.zeros_like(im)
+        m = 0
+
+        for inst, score in zip(det['masks'], det['scores']):
+            if score < score_thresh:
+                continue
+
+            inst = (inst > 0.25).float()
+
+            inst = inst.cpu().numpy()
+            inst = np.transpose(inst, (1, 2, 0))
+            inst *= 255
+            inst = cv2.cvtColor(inst, cv2.COLOR_GRAY2BGR)
+
+            inst[np.where((inst==[255,255,255]).all(axis=2))] = get_random_col()
+            im = overlay(im, inst, 0.5)
+            m += 1
+
     return im
 
 def inout_grid(im, out, savepath):
@@ -86,7 +113,8 @@ def main():
 
     generator = torch.utils.data.DataLoader(ds, 1)
 
-    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    # model = fasterrcnn_resnet50_fpn(pretrained=True)
+    model = maskrcnn_resnet50_fpn(pretrained=True)
 
     # GPU
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -99,15 +127,15 @@ def main():
             # Predict
             im = im.to(device)
             det = model(im)
-
+            
             # Display
             disp = np.array(torchvision.transforms.ToPILImage()(im.squeeze(0)), dtype=np.uint8)
             out = paint_detections(disp.copy(), det[0])
-
+            
             inout_grid(disp, out, os.path.join(OUTPUT_DIR, f'{DATA_NAME}_{c}.png'))
 
             c += 1
-            if c == 3:
+            if c == 5:
                 quit()
 
 if __name__ == '__main__':
