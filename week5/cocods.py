@@ -1,8 +1,10 @@
+import os
+import time
 import random
+import argparse
 import pickle as pkl
 import colorsys
 
-import os
 import cv2
 import torch
 import torchvision
@@ -25,9 +27,14 @@ with open('coco_classes.pkl', 'rb') as f:
 #-------------------| <img2>.jpg
 
 DATA_NAME = 'cocot17' # images will be saved as <DATA_NAME>_<num>.png
+MAX_NUM_IMG = 10
 DATA_DIR = '/data/COCO/test2017/'
 OUTPUT_DIR = '/code/results'
 
+MODELS = {
+    'faster': fasterrcnn_resnet50_fpn(True),
+    'mask': maskrcnn_resnet50_fpn(True)
+}
 def get_optimal_font_scale(text, width):
     for scale in reversed(range(0, 60, 1)):
         textSize = cv2.getTextSize(text, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=scale/10, thickness=1)
@@ -71,6 +78,7 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
             m += 1
 
     if 'boxes' in det:
+        print('Drawing boxes...')
 
         for bbox, lab, score, color in zip(det['boxes'], det['labels'], det['scores'], colors):
 
@@ -92,7 +100,6 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
                 # Print name, id and conf
                 cv2.putText(im, text, (x1, int(y1+0.15*h)), cv2.FONT_HERSHEY_COMPLEX_SMALL, get_optimal_font_scale(text, 0.7*w), (0,0,0))
 
-
     return im
 
 def inout_grid(im, out, savepath):
@@ -107,15 +114,15 @@ def inout_grid(im, out, savepath):
     
     plt.savefig(savepath, bbox_inches='tight',dpi=300)
 
-def main():
+def main(args):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     ds = torchvision.datasets.ImageFolder(DATA_DIR, transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
 
-    generator = torch.utils.data.DataLoader(ds, 1)
+    generator = torch.utils.data.DataLoader(ds, 1, shuffle=args.shuffle)
 
     # model = fasterrcnn_resnet50_fpn(pretrained=True)
-    model = maskrcnn_resnet50_fpn(pretrained=True)
+    model = MODELS[args.model]
 
     # GPU
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -127,7 +134,10 @@ def main():
         for im, lab in generator:
             # Predict
             im = im.to(device)
+            print('Inferring...')
+            t0 = time.time()
             det = model(im)
+            print('Inference time: ', time.time() - t0)
             
             # Display
             disp = np.array(torchvision.transforms.ToPILImage()(im.squeeze(0)), dtype=np.uint8)
@@ -136,8 +146,16 @@ def main():
             inout_grid(disp, out, os.path.join(OUTPUT_DIR, f'{DATA_NAME}_{c}.png'))
 
             c += 1
-            if c == 5:
+            if c == MAX_NUM_IMG:
                 quit()
 
 if __name__ == '__main__':
-    main()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-m', '--model', type=str, required=False,
+        default='faster', choices=['faster', 'mask'], help='Which model to run: faster or mask rcnn')
+    parser.add_argument('-s', '--shuffle', action='store_true', help='Whether to shuffle the dataset or not')
+    args = parser.parse_args()
+
+    main(args)
