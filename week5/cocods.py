@@ -27,14 +27,16 @@ with open('coco_classes.pkl', 'rb') as f:
 #-------------------| <img2>.jpg
 
 DATA_NAME = 'cocot17' # images will be saved as <DATA_NAME>_<num>.png
-MAX_NUM_IMG = 10
-DATA_DIR = '/data/COCO/test2017/'
-OUTPUT_DIR = '/code/results'
+MAX_NUM_IMG = 3
+# DATA_DIR = '/data/COCO/test2017/'
+DATA_DIR = '/home/capiguri/code/datasets/COCO/test2017/'
+OUTPUT_DIR = './results'
 
 MODELS = {
     'faster': fasterrcnn_resnet50_fpn(True),
     'mask': maskrcnn_resnet50_fpn(True)
 }
+
 def get_optimal_font_scale(text, width):
     for scale in reversed(range(0, 60, 1)):
         textSize = cv2.getTextSize(text, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=scale/10, thickness=1)
@@ -80,6 +82,7 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
     if 'boxes' in det:
         print('Drawing boxes...')
 
+        cont = 0
         for bbox, lab, score, color in zip(det['boxes'], det['labels'], det['scores'], colors):
 
             x1, y1, x2, y2 = np.int0(bbox.cpu().numpy())
@@ -91,7 +94,7 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
             if confidence > score_thresh:
                 cv2.rectangle(im, (x1, y1), (x2, y2), color)
 
-                text = f'{category} - {int(100*confidence)} %'
+                text = f'{cont} - {category} - {int(100*confidence)} %'
                 # "Background" for label
                 im = cv2.rectangle(im, 
                     (x1, y1),
@@ -99,6 +102,7 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
                     color, -1)
                 # Print name, id and conf
                 cv2.putText(im, text, (x1, int(y1+0.15*h)), cv2.FONT_HERSHEY_COMPLEX_SMALL, get_optimal_font_scale(text, 0.7*w), (0,0,0))
+            cont += 1
 
     return im
 
@@ -113,11 +117,14 @@ def inout_grid(im, out, savepath):
         ax.imshow(img[0])
     
     plt.savefig(savepath, bbox_inches='tight',dpi=300)
+    plt.show()
+
 
 def main(args):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    ds = torchvision.datasets.ImageFolder(DATA_DIR, transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
+    ds = torchvision.datasets.ImageFolder(DATA_DIR,
+        transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
 
     generator = torch.utils.data.DataLoader(ds, 1, shuffle=args.shuffle)
 
