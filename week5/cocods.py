@@ -47,11 +47,32 @@ def overlay(img_ol, mask_ol, alpha=0.6):
     return img_ol
 
 def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
-    colors = []
+    colors = [get_random_col() for _ in range(len(det['scores']))]
+
+    if 'masks' in det:
+        print('Drawing masks...')
+
+        out = np.zeros_like(im)
+        m = 0
+
+        for inst, score, color in zip(det['masks'], det['scores'], colors):
+            if score < score_thresh:
+                continue
+
+            inst = (inst > 0.25).float()
+
+            inst = inst.cpu().numpy()
+            inst = np.transpose(inst, (1, 2, 0))
+            inst *= 255
+            inst = cv2.cvtColor(inst, cv2.COLOR_GRAY2BGR)
+
+            inst[np.where((inst==[255,255,255]).all(axis=2))] = color
+            im = overlay(im, inst, 0.5)
+            m += 1
+
     if 'boxes' in det:
 
-        for bbox, lab, score in zip(det['boxes'], det['labels'], det['scores']):
-            color = get_random_col()
+        for bbox, lab, score, color in zip(det['boxes'], det['labels'], det['scores'], colors):
 
             x1, y1, x2, y2 = np.int0(bbox.cpu().numpy())
             w = x2 - x1
@@ -71,26 +92,6 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
                 # Print name, id and conf
                 cv2.putText(im, text, (x1, int(y1+0.15*h)), cv2.FONT_HERSHEY_COMPLEX_SMALL, get_optimal_font_scale(text, 0.7*w), (0,0,0))
 
-    if 'masks' in det:
-        print('Drawing masks...')
-
-        out = np.zeros_like(im)
-        m = 0
-
-        for inst, score in zip(det['masks'], det['scores']):
-            if score < score_thresh:
-                continue
-
-            inst = (inst > 0.25).float()
-
-            inst = inst.cpu().numpy()
-            inst = np.transpose(inst, (1, 2, 0))
-            inst *= 255
-            inst = cv2.cvtColor(inst, cv2.COLOR_GRAY2BGR)
-
-            inst[np.where((inst==[255,255,255]).all(axis=2))] = get_random_col()
-            im = overlay(im, inst, 0.5)
-            m += 1
 
     return im
 
