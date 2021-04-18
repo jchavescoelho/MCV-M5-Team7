@@ -26,10 +26,11 @@ with open('coco_classes.pkl', 'rb') as f:
 #-------------------| <img1>.jpg
 #-------------------| <img2>.jpg
 
-DATA_NAME = 'cocot17' # images will be saved as <DATA_NAME>_<num>.png
-MAX_NUM_IMG = 3
-# DATA_DIR = '/data/COCO/test2017/'
+DATA_NAME = 'taskbout' # images will be saved as <DATA_NAME>_<num>.png
+MAX_NUM_IMG = 100
 DATA_DIR = '/home/capiguri/code/datasets/COCO/test2017/'
+DATA_DIR = './taskbin/'
+# DATA_DIR = './img2infer/'
 OUTPUT_DIR = './results'
 
 MODELS = {
@@ -118,11 +119,11 @@ def inout_grid(im, out, savepath):
         ax.imshow(img[0])
     
     plt.savefig(savepath, bbox_inches='tight',dpi=300)
-    plt.show()
+    # plt.show()
 
 
 def main(args):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(os.path.join(OUTPUT_DIR, DATA_NAME), exist_ok=True)
 
     ds = torchvision.datasets.ImageFolder(DATA_DIR,
         transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
@@ -151,7 +152,7 @@ def main(args):
             disp = np.array(torchvision.transforms.ToPILImage()(im.squeeze(0)), dtype=np.uint8)
             out = paint_detections(disp.copy(), det[0])
             
-            inout_grid(disp, out, os.path.join(OUTPUT_DIR, f'{DATA_NAME}_{c}.png'))
+            inout_grid(disp, out, os.path.join(OUTPUT_DIR, DATA_NAME, f'{args.model}_{c}.png'))
 
             c += 1
             if c == MAX_NUM_IMG:

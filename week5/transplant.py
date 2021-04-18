@@ -24,8 +24,11 @@ OUTPUT_DIR = './taskbin'
 model = maskrcnn_resnet50_fpn(True)
 model.eval()
 
-src_name = '000000451347.jpg'
-dst_name = '000000575927.jpg'
+# elefant: '000000193532.jpg'
+# car: 000000286423.jpg 
+# sheep: '000000140586.jpg'
+src_name = '000000140586.jpg'
+dst_name = None # '000000193532.jpg'
 
 mousex, mousey = 0, 0
 
