@@ -92,6 +92,7 @@ def paint_detections(im, det, score_thresh=0.8, mask_thresh=0.5):
             confidence = score.cpu().numpy()
 
             if confidence > score_thresh:
+                print(f'id: {cont} - class: {category} - conf: {confidence}' )
                 cv2.rectangle(im, (x1, y1), (x2, y2), color)
 
                 text = f'{cont} - {category} - {int(100*confidence)} %'
