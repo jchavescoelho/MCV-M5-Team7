@@ -27,65 +27,104 @@ import parse_ds as ds
 
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls_big/'
+SAVE_PATH_RAW = '/home/group07/code/MCV-M5-Team7/week4/evaluation_pret_good/'
 
-# MOTS_CLASSES = {
-#     '0': 'background',
-#     '1': 'car',
-#     '2': 'pedestrian',
-#     '10': 'ignore'
-# }
+os.makedirs(SAVE_PATH_RAW, exist_ok=True)
+
 # Load/Register datasets
 
-ds_name = 'kitti-mots' # mots
-mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
+ds_name = 'kitti-mots'
+train_dicts, val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
 
-DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
-MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
+DatasetCatalog.register(ds_name+'_train', lambda : train_dicts)
+MetadataCatalog.get(ds_name+'_train').set(thing_classes=['pedestrian', 'ignore', 'car'])
+
+DatasetCatalog.register(ds_name+'_val', lambda : val_dicts)
+MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'ignore', 'car'])
+
+ds_metadata = MetadataCatalog.get(ds_name+'_train')
+
 
 # Pre-trained
 print('Loading pre-trained models...')
 
 #Select model
 classes = ('pedestrian', 'car')
-model_zoo_yml = "COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x.yaml"
 
-cfg = get_cfg()
+models = [
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_C4_3x.yaml",
+    "COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x.yaml",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_DC5_3x.yaml",
+    "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml",
+    "Cityscapes/mask_rcnn_R_50_FPN.yaml"
+    ]
 
-cfg.merge_from_file(model_zoo.get_config_file(model_zoo_yml))
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
+for model_zoo_yml in models:
 
-predictor = DefaultPredictor(cfg)
+    model_name = model_zoo_yml.split('/')[-1][:-5]
+    print(model_name)
+    SAVE_PATH = os.path.join(SAVE_PATH_RAW, model_name)
+    os.makedirs(SAVE_PATH, exist_ok=True)
 
-import pandas as pd
-modelclasses = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes
-df = pd.DataFrame(modelclasses,columns=['Model classes'])
-print(df)
+    print('Running for model', model_zoo_yml)
+    cfg = get_cfg()
+    cfg.merge_from_file(model_zoo.get_config_file(model_zoo_yml))
+    cfg.DATASETS.TRAIN = (ds_name + '_train', )
+    cfg.DATASETS.TEST = (ds_name + '_val', )
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5
+    cfg.OUTPUT_DIR = SAVE_PATH
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
 
+    predictor = DefaultPredictor(cfg)
 
+    import pandas as pd
+    modelclasses = MetadataCatalog.get(cfg.DATASETS.TRAIN[0]).thing_classes
+    df = pd.DataFrame(modelclasses,columns=['Model classes'])
+    print(df)
 
-# # visualize
-# print('Save some visualizations...')
-# os.makedirs('./samplepretrained/', exist_ok=True)
+    # visualize
+    # SAVE_PATH = 
+    os.makedirs(os.path.join(SAVE_PATH, 'images'), exist_ok=True)
 
-# for d in random.sample(mots_val_dicts, 5):
-#     print('\n', d["file_name"])
-#     img = cv2.imread(d["file_name"])
-#     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
-#     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-#     saveto = '/home/group07/code/MCV-M5-Team7/week4/samplegt/gt_' + name
-#     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
-    
-# Evaluate
-print('Evaluating...')
+    print('Save some visualizations...')
+    for d in random.sample(val_dicts, 5):
+        print('\n', d["file_name"])
+        img = cv2.imread(d["file_name"])
+        visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
+        out = visualizer.draw_dataset_dict(d)
+        name = os.path.split(d['file_name'])[-1]
+        saveto = os.path.join(os.path.join(SAVE_PATH, 'images'), 'gt_' + name)
+        print(saveto)
+        cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from detectron2.data import build_detection_test_loader
+    print('Running some random inferences...')
+    for d in random.sample(val_dicts, 5):
+        file_name = d['file_name']
+        im = cv2.imread(file_name)
+        outputs = predictor(im)
 
-evaluator = COCOEvaluator(ds_name + "_val", ("bbox", "segm"), False, output_dir="./output/")
-val_loader = build_detection_test_loader(cfg, ds_name + "_val")
-print(inference_on_dataset(trainer.model, val_loader, evaluator))
+        inst = outputs["instances"].to('cpu')
+        inst = inst[[True if c == 0 or c == 2 else False for c in inst.pred_classes]]
+        # instances = outputs["instances"][outputs["instances"].scores > 0.5]
+        v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
+        out = v.draw_instance_predictions(inst.to("cpu"))
+        name = os.path.split(d['file_name'])[-1]
+        saveto = os.path.join(SAVE_PATH, 'images', 'infer_' + name)
+        print(saveto)
+        cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
+    # Evaluate
+    print('Evaluating...')
 
+    from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+    from detectron2.data import build_detection_test_loader
+
+    evaluator = COCOEvaluator(ds_name + "_val", ("bbox", "segm",), False, output_dir=SAVE_PATH)
+    val_loader = build_detection_test_loader(cfg, ds_name + "_val")
+    results = inference_on_dataset(predictor.model, val_loader, evaluator)
+
+    print(os.path.join(SAVE_PATH, 'results.json'))
+    with open(os.path.join(SAVE_PATH, 'results.json'), 'w') as fp:
+        json.dump(results, fp, indent=4)
 
 
