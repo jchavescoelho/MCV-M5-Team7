@@ -24,6 +24,9 @@ OUTPUT_DIR = './taskbin'
 model = maskrcnn_resnet50_fpn(True)
 model.eval()
 
+src_name = '000000052113.jpg'
+dst_name = '000000052113.jpg'
+
 
 def extract_obj(im_path, idx=None):
     name = os.path.split(im_path)[-1]
@@ -74,17 +77,20 @@ with torch.no_grad():
 
     all_imgs = os.listdir(DATA_DIR)
 
-    while not src_ok:
-        cv2.destroyAllWindows()
-        src_name  = random.sample(all_imgs, 1)[0]
+    if not src_name:
+        while not src_ok:
+            cv2.destroyAllWindows()
+            src_name  = random.sample(all_imgs, 1)[0]
+            src = cv2.imread(os.path.join(DATA_DIR, src_name))
+
+            cv2.imshow(f'Source {src_name}', src)
+            print('Press s if you want use this as source image...')
+            k = cv2.waitKey(0)
+
+            if k == ord('s'):
+                src_ok = True
+    else:
         src = cv2.imread(os.path.join(DATA_DIR, src_name))
-
-        cv2.imshow(f'Source {src_name}', src)
-        print('Press s if you want use this as source image...')
-        k = cv2.waitKey(0)
-
-        if k == ord('s'):
-            src_ok = True
 
     while not crop_ok:
         masked, mask, idx = extract_obj(os.path.join(DATA_DIR, src_name))
@@ -96,21 +102,25 @@ with torch.no_grad():
         if k == ord('s'):
             crop_ok = True
 
-    lst_dst = 'efimero'
-    cv2.namedWindow(lst_dst)
-    while not dst_ok:
-        cv2.destroyWindow(lst_dst)
-        dst_name  = random.sample(all_imgs, 1)[0]
+    if not dst_name:
+        lst_dst = 'efimero'
+        cv2.namedWindow(lst_dst)
+        while not dst_ok:
+            cv2.destroyWindow(lst_dst)
+            dst_name  = random.sample(all_imgs, 1)[0]
+            dst = cv2.imread(os.path.join(DATA_DIR, dst_name))
+
+            lst_dst = f'Destination {dst_name}'
+            cv2.imshow(lst_dst, dst)
+            print('Press s if you want to use this image as destination...')
+            k = cv2.waitKey(0)
+
+            if k == ord('s'):
+                dst_ok = True
+    else:
         dst = cv2.imread(os.path.join(DATA_DIR, dst_name))
 
-        lst_dst = f'Destination {dst_name}'
-        cv2.imshow(lst_dst, dst)
-        print('Press s if you want to use this image as destination...')
-        k = cv2.waitKey(0)
-
-        if k == ord('s'):
-            dst_ok = True
-
+    print('Target image:', dst_name)
     # Match sizes
     adapted = np.zeros_like(dst)
     adapted_guide = np.zeros_like(dst)
