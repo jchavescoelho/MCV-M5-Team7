@@ -27,6 +27,14 @@ model.eval()
 src_name = '000000451347.jpg'
 dst_name = '000000575927.jpg'
 
+mousex, mousey = 0, 0
+
+def xy_callback(event, x, y, flags, param):
+    global mousex, mousey
+    if event == cv2.EVENT_LBUTTONDOWN:
+        mousex = x
+        mousey = y
+
 
 def extract_obj(im_path, idx=None):
     name = os.path.split(im_path)[-1]
@@ -147,7 +155,7 @@ with torch.no_grad():
     cv2.destroyAllWindows()
     cv2.imshow('Final match - Dst', dst)
     cv2.imshow('Final match - Src', adapted)
-    print('Source object and destination iamge. Press s if you want to resize the object...')
+    print('Source object and destination iamge. Press s if you want to resize the object, c to click position and z to resize and click...')
     k = cv2.waitKey(0)
 
     if k == ord('s'):
@@ -166,7 +174,46 @@ with torch.no_grad():
         adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
         adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
 
-    print(dst.shape, adapted.shape, adapted_guide.shape)
+    elif k == ord('c'):
+        print('Click on desired position on target image...')
+        cv2.namedWindow('Final match - Dst')
+        cv2.setMouseCallback('Final match - Dst', xy_callback)
+        dst_draw = cv2.rectangle(dst.copy(), (0,0), (dst.shape[1]-masked.shape[1], dst.shape[0]-masked.shape[0]), (0,255,0))
+        cv2.imshow('Final match - Dst', dst_draw)
+        cv2.waitKey(0)
+
+        y, x = mousey, mousex
+
+        adapted = np.zeros_like(dst)
+        adapted_guide = np.zeros_like(dst)
+
+        adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
+        adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
+    
+    elif k == ord('z'):
+
+        sf = float(input('Desired scale factor on obj (0 - 1, pls): '))
+        # adapted = cv2.resize(adapted, tuple(np.int0(sf*np.array(adapted.shape[:2][::-1]))))
+        # adapted_guide = cv2.resize(adapted_guide, tuple(np.int0(sf*np.array(adapted_guide.shape[:2][::-1]))))
+        masked = cv2.resize(masked, tuple(np.int0(sf*np.array(masked.shape[:2][::-1]))))
+        mask = cv2.resize(mask, tuple(np.int0(sf*np.array(mask.shape[:2][::-1]))))
+
+        dst_draw = cv2.rectangle(dst.copy(), (0,0), (dst.shape[1]-masked.shape[1], dst.shape[0]-masked.shape[0]), (0,255,0))
+        cv2.namedWindow('Final match - Dst')
+        cv2.setMouseCallback('Final match - Dst', xy_callback)
+        cv2.imshow('Final match - Dst', dst_draw)
+        cv2.waitKey(0)
+
+        y, x = mousey, mousex
+
+        adapted = np.zeros_like(dst)
+        adapted_guide = np.zeros_like(dst)
+
+        adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
+        adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
+
+
+
     dst = overlay_rnd(dst, adapted, adapted_guide, 1)
 
     cv2.destroyAllWindows()
