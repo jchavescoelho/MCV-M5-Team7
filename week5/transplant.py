@@ -24,8 +24,8 @@ OUTPUT_DIR = './taskbin'
 model = maskrcnn_resnet50_fpn(True)
 model.eval()
 
-src_name = '000000052113.jpg'
-dst_name = '000000052113.jpg'
+src_name = '000000451347.jpg'
+dst_name = '000000575927.jpg'
 
 
 def extract_obj(im_path, idx=None):
@@ -33,6 +33,10 @@ def extract_obj(im_path, idx=None):
     print('Source image:', name)
 
     original = cv2.imread(im_path)
+    if original is None:
+        print('Error reading image', im_path)
+        quit()
+
     im = original.copy()
 
     if im is None:
@@ -133,6 +137,10 @@ with torch.no_grad():
         mask = cv2.resize(mask, (dst.shape[1]*masked.shape[0]//masked.shape[1], dst.shape[1]))
 
     y, x = random.randint(0, dst.shape[0] - masked.shape[0]), random.randint(0, dst.shape[1] - masked.shape[1])
+
+    print('y', dst.shape[0], masked.shape[0])
+    print('x', dst.shape[1], masked.shape[1])
+
     adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
     adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
 
@@ -144,8 +152,19 @@ with torch.no_grad():
 
     if k == ord('s'):
         sf = float(input('Desired scale factor on obj (0 - 1, pls): '))
-        adapted = cv2.resize(adapted, tuple(np.int0(sf*np.array(adapted.shape[:2][::-1]))))
-        adapted_guide = cv2.resize(adapted_guide, tuple(np.int0(sf*np.array(adapted_guide.shape[:2][::-1]))))
+        # adapted = cv2.resize(adapted, tuple(np.int0(sf*np.array(adapted.shape[:2][::-1]))))
+        # adapted_guide = cv2.resize(adapted_guide, tuple(np.int0(sf*np.array(adapted_guide.shape[:2][::-1]))))
+        masked = cv2.resize(masked, tuple(np.int0(sf*np.array(masked.shape[:2][::-1]))))
+        mask = cv2.resize(mask, tuple(np.int0(sf*np.array(mask.shape[:2][::-1]))))
+
+        print(masked.shape, dst.shape)
+        y, x = random.randint(0, dst.shape[0] - masked.shape[0]), random.randint(0, dst.shape[1] - masked.shape[1])
+
+        adapted = np.zeros_like(dst)
+        adapted_guide = np.zeros_like(dst)
+
+        adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
+        adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
 
     print(dst.shape, adapted.shape, adapted_guide.shape)
     dst = overlay_rnd(dst, adapted, adapted_guide, 1)
