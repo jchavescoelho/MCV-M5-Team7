@@ -1,4 +1,3 @@
-
 # import some common libraries
 import os
 import sys
@@ -28,8 +27,8 @@ import parse_ds as ds
 
 MOTS_PATH = '/home/mcv/datasets/MOTSChallenge/train/images/'
 KITTI_MOTS_PATH = '/home/mcv/datasets/KITTI-MOTS/training/image_02/'
-PKLS_PATH = './pkls/'
-TRAIN = True
+PKLS_PATH = './pkls_big/'
+TRAIN = False
 
 MOTS_CLASSES = {
     '0': 'background',
@@ -39,12 +38,12 @@ MOTS_CLASSES = {
 }
 # Load/Register datasets
 
-# mots
 # train
-ds_name = 'kitti-mots'
+ds_name = 'kitti-mots' # mots
 mots_train_dicts, mots_val_dicts = ds.get_mots_dicts(KITTI_MOTS_PATH, ds_name)
 
 labels = set()
+
 # remap dataset class labels
 for dataset in [mots_train_dicts, mots_val_dicts]:
     for image in dataset:
@@ -64,6 +63,13 @@ ds_metadata = MetadataCatalog.get(ds_name+'_train')
 DatasetCatalog.register(ds_name+'_val', lambda : mots_val_dicts)
 MetadataCatalog.get(ds_name+'_val').set(thing_classes=['pedestrian', 'bike', 'car'])
 
+'''
+for im in mots_train_dicts:
+    for obj in im['annotations']:
+        print(obj['bbox'])
+        print(len(obj['segmentation'][0]))
+quit()
+'''
 # visualize
 print('Save some visualizations...')
 os.makedirs('./samplegt/', exist_ok=True)
@@ -73,7 +79,7 @@ for d in random.sample(mots_train_dicts, 5):
     visualizer = Visualizer(img[:, :, ::-1], metadata=ds_metadata, scale=0.5)
     out = visualizer.draw_dataset_dict(d)
     name = os.path.split(d['file_name'])[-1]
-    saveto = '/home/group07/code/MCV-M5-Team7/week3/samplegt/gt_' + name
+    saveto = '/home/group07/code/MCV-M5-Team7/week4/samplegt/gt_' + name
     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 # Pre-trained
@@ -81,72 +87,69 @@ print('Loading pre-trained models...')
 
 #Select model
 classes = ('pedestrian', 'car')
-model_zoo_yml = "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
-model_zoo_yml = "COCO-Detection/retinanet_R_50_FPN_3x.yaml"
+model_zoo_yml = "COCO-InstanceSegmentation/mask_rcnn_R_101_C4_3x.yaml"
+
 folder_name = model_zoo_yml.split('/')[-1].split('.')[0]
 
 cfg = get_cfg()
+
 cfg.OUTPUT_DIR = os.path.join('models', folder_name)
-
-# cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/retinanet_R_50_FPN_3x.yaml"))
 cfg.merge_from_file(model_zoo.get_config_file(model_zoo_yml))
-
-# cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/retinanet_R_50_FPN_3x.yaml")
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_zoo_yml)
 
+# # Training goes here
+# if TRAIN:
+#     from detectron2.engine import DefaultTrainer
+#     print('Configuring training...')
+#     cfg.DATASETS.TRAIN = (ds_name + "_train",)
+#     cfg.DATASETS.TEST = ()
+#     cfg.DATALOADER.NUM_WORKERS = 4
+#     cfg.SOLVER.IMS_PER_BATCH = 8
+#     cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
+#     cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
+#     cfg.SOLVER.STEPS = []        # do not decay learning rate
+#     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
+#     cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)
 
-# Training goes here
-if TRAIN:
-    from detectron2.engine import DefaultTrainer
-    print('Configuring training...')
-    cfg.DATASETS.TRAIN = (ds_name + "_train",)
-    cfg.DATASETS.TEST = ()
-    cfg.DATALOADER.NUM_WORKERS = 4
-    cfg.SOLVER.IMS_PER_BATCH = 8
-    cfg.SOLVER.BASE_LR = 0.00025  # pick a good LR
-    cfg.SOLVER.MAX_ITER = 300    # 300 iterations seems good enough for this toy dataset; you will need to train longer for a practical dataset
-    cfg.SOLVER.STEPS = []        # do not decay learning rate
-    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512   # faster, and good enough for this toy dataset (default: 512)
-    cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(classes)  
+#     print('Preparing training...')
+#     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+#     trainer = DefaultTrainer(cfg)
+#     trainer.resume_or_load(resume=False)
 
-    print('Preparing training...')
-    os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-    trainer = DefaultTrainer(cfg) 
-    trainer.resume_or_load(resume=False)
+#     print('Launching training...')
+#     trainer.train()
 
-    print('Launching training...')
-    trainer.train()
-    
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # path to the model we just trained
+#     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")  # path to the model we just trained
 
-# Random inferences
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
+# # Random inferences
+# cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
 
 predictor = DefaultPredictor(cfg)
 os.makedirs(f'./sampleinfer/{folder_name}', exist_ok=True)
 
-print('Running some random inferences...')
-for d in random.sample(mots_train_dicts, 5):
-    file_name = d['file_name']
-    im = cv2.imread(file_name)
-    outputs = predictor(im)
+# print('Running some random inferences...')
+# for d in random.sample(mots_train_dicts, 5):
+#     file_name = d['file_name']
+#     im = cv2.imread(file_name)
+#     outputs = predictor(im)
 
-    inst = outputs["instances"].to('cpu')
-    inst = inst[[True if c == 0 or c == 2 else False for c in inst.pred_classes]]
-    # instances = outputs["instances"][outputs["instances"].scores > 0.5]
-    v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
-    out = v.draw_instance_predictions(inst.to("cpu"))
-    name = os.path.split(d['file_name'])[-1]
-    saveto = f'/home/group07/code/MCV-M5-Team7/week3/sampleinfer/{folder_name}/infer_' + name
-    cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
-
+#     inst = outputs["instances"].to('cpu')
+#     inst = inst[[True if c == 0 or c == 2 else False for c in inst.pred_classes]]
+#     # instances = outputs["instances"][outputs["instances"].scores > 0.5]
+#     v = Visualizer(im[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1)
+#     out = v.draw_instance_predictions(inst.to("cpu"))
+#     name = os.path.split(d['file_name'])[-1]
+#     saveto = f'/home/group07/code/MCV-M5-Team7/week4/sampleinfer/{folder_name}/infer_' + name
+#     cv2.imwrite(saveto, out.get_image()[:, :, ::-1])
 
 # Evaluate
 print('Evaluating...')
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.data import build_detection_test_loader
 
-evaluator = COCOEvaluator(ds_name + "_val", ("bbox",), False, output_dir="./output/")
+evaluator = COCOEvaluator(ds_name + "_val", ("bbox","segm",), False, output_dir="./output/")
 val_loader = build_detection_test_loader(cfg, ds_name + "_val")
 print(inference_on_dataset(predictor.model, val_loader, evaluator))
 # another equivalent way to evaluate the model is to use `trainer.test`
+
+
