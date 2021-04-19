@@ -6,11 +6,9 @@ Week 3 presentation: [google slides](https://docs.google.com/presentation/d/1--7
 ## Team members
 - Juan Chaves (<juanvictor.chaves@e-campus.uab.cat>)
 - Carmen García (<carmen.garciano@e-campus.uab.cat>)
-- 
-- Mohamed El Atiki (<moha.atiki@gmail.com>)
 
-## Overlaf project
-Our Overleaf report can be accessed [here](https://www.overleaf.com/read/rdpmxdjmwbyz).
+## Overlaf project & GSlides presentation
+Our Overleaf report can be accessed [here](https://www.overleaf.com/read/jkhtwcpnvqkq). Our final [presentation](https://docs.google.com/presentation/d/1zQIDSzE2GYsMPK8bgN-he19n28jDWdL08HvVd0_7o6c/edit?usp=sharing).
 
 # Help
 
