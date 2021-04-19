@@ -1,5 +1,6 @@
 import os
 import time
+import glob
 import random
 import argparse
 import pickle as pkl
@@ -17,6 +18,9 @@ from torchvision.models.detection import maskrcnn_resnet50_fpn, fasterrcnn_resne
 with open('coco_classes.pkl', 'rb') as f:
     CLASSES = pkl.load(f)
 
+# print(CLASSES)
+# quit()
+
 # DATA_DIR is a folder with a subfolder inside for each class. 
 # Even if you have no class labels or whatever just create a subfolder with all the images. The structure would look like:
 
@@ -26,10 +30,10 @@ with open('coco_classes.pkl', 'rb') as f:
 #-------------------| <img1>.jpg
 #-------------------| <img2>.jpg
 
-DATA_NAME = 'taskbout' # images will be saved as <DATA_NAME>_<num>.png
+DATA_NAME = 'taskD2' # images will be saved as <DATA_NAME>_<num>.png
 MAX_NUM_IMG = 100
 DATA_DIR = '/home/capiguri/code/datasets/COCO/test2017/'
-DATA_DIR = './taskbin/'
+DATA_DIR = './taskD2/'
 # DATA_DIR = './img2infer/'
 OUTPUT_DIR = './results'
 
@@ -119,16 +123,16 @@ def inout_grid(im, out, savepath):
         ax.imshow(img[0])
     
     plt.savefig(savepath, bbox_inches='tight',dpi=300)
-    # plt.show()
+    plt.show()
 
 
 def main(args):
     os.makedirs(os.path.join(OUTPUT_DIR, DATA_NAME), exist_ok=True)
 
-    ds = torchvision.datasets.ImageFolder(DATA_DIR,
-        transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
+    # ds = torchvision.datasets.ImageFolder(DATA_DIR,
+    #     transform=torchvision.transforms.Compose([torchvision.transforms.ToTensor()]))
 
-    generator = torch.utils.data.DataLoader(ds, 1, shuffle=args.shuffle)
+    # generator = torch.utils.data.DataLoader(ds, 1, shuffle=args.shuffle)
 
     # model = fasterrcnn_resnet50_fpn(pretrained=True)
     model = MODELS[args.model]
@@ -140,7 +144,16 @@ def main(args):
 
     c = 0
     with torch.no_grad():# GPU
-        for im, lab in generator:
+        # for im, lab in generator:
+        files = glob.glob(DATA_DIR + '/*/*.*')
+        if args.shuffle:
+            random.shuffle(files)
+
+        for impath in files:
+            print('impath', impath)
+            im = cv2.imread(impath)
+            im = torchvision.transforms.ToTensor()(im)
+            im = im.unsqueeze(0)
             # Predict
             im = im.to(device)
             print('Inferring...')
@@ -148,15 +161,23 @@ def main(args):
             det = model(im)
             print('Inference time: ', time.time() - t0)
             
+            # print('keys', det[0].keys())
+            # labs = [CLASSES[int(lab.cpu().numpy())] for lab in det[0]['labels']]
+            # print(labs, 'person' in labs)
+            
+            # if 'potted plant' not in labs or 'cat' not in labs:
+            #     continue
+
             # Display
             disp = np.array(torchvision.transforms.ToPILImage()(im.squeeze(0)), dtype=np.uint8)
-            out = paint_detections(disp.copy(), det[0])
-            
+            out = paint_detections(disp.copy(), det[0], 0.8)
             inout_grid(disp, out, os.path.join(OUTPUT_DIR, DATA_NAME, f'{args.model}_{c}.png'))
 
             c += 1
             if c == MAX_NUM_IMG:
                 quit()
+
+            print('='*16)
 
 if __name__ == '__main__':
 
