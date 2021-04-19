@@ -20,15 +20,30 @@ def overlay_rnd(img_ol, mask_ol, guide, alpha=0.6):
     return img_ol
 
 DATA_DIR = '/home/capiguri/code/datasets/COCO/test2017/all'
-OUTPUT_DIR = './taskbin'
+OUTPUT_DIR = './taskD'
 model = maskrcnn_resnet50_fpn(True)
 model.eval()
 
 # elefant: '000000193532.jpg'
 # car: 000000286423.jpg 
 # sheep: '000000140586.jpg'
-src_name = '000000140586.jpg'
-dst_name = None # '000000193532.jpg'
+# pc: 000000193581
+# ice: 000000343647.png
+# girafe: 000000569573.png
+# skate: 000000301891
+# dogobench: 000000003900
+# teddybb 000000004036
+# kitifurni 
+
+# cjuekn 000000324469
+# flucly dog 000000487054
+# fake cat 000000027359
+
+num = 140586
+ext = 'jpg'
+
+src_name =  str(num).zfill(12) + '.' + ext
+dst_name = str(num).zfill(12) + '.' + ext # 'black.jpg' # 'chess.png'  #white.jpeg' # '000000343647.jpg' # None #'000000193581.jpg'
 
 mousex, mousey = 0, 0
 
@@ -58,7 +73,7 @@ def extract_obj(im_path, idx=None):
     # cv2.waitKey(0)
 
     det = model(torchvision.transforms.ToTensor()(im).unsqueeze(0))[0]
-    out = paint_detections(im, det)
+    out = paint_detections(im, det, 0.5)
 
     cv2.imshow(f'Source {name}', out)
     cv2.waitKey(100)
@@ -135,22 +150,24 @@ with torch.no_grad():
     else:
         dst = cv2.imread(os.path.join(DATA_DIR, dst_name))
 
-    print('Target image:', dst_name)
+    print('Target image:', dst_name, dst.shape)
     # Match sizes
     adapted = np.zeros_like(dst)
     adapted_guide = np.zeros_like(dst)
     if masked.shape[0] > dst.shape[0]:
-        masked = cv2.resize(masked, (dst.shape[0], dst.shape[0]*masked.shape[1]//masked.shape[0]))
-        mask = cv2.resize(mask, (dst.shape[0], dst.shape[0]*masked.shape[1]//masked.shape[0]))
+        print('h')
+        masked = cv2.resize(masked, (dst.shape[0]*masked.shape[1]//masked.shape[0], dst.shape[0]))
+        mask = cv2.resize(mask, (dst.shape[0]*mask.shape[1]//mask.shape[0], dst.shape[0]))
 
     if masked.shape[1] > dst.shape[1]:
-        masked = cv2.resize(masked, (dst.shape[1]*masked.shape[0]//masked.shape[1], dst.shape[1]))
-        mask = cv2.resize(mask, (dst.shape[1]*masked.shape[0]//masked.shape[1], dst.shape[1]))
-
-    y, x = random.randint(0, dst.shape[0] - masked.shape[0]), random.randint(0, dst.shape[1] - masked.shape[1])
+        print('w')
+        masked = cv2.resize(masked, (dst.shape[1], dst.shape[1]*masked.shape[0]//masked.shape[1]))
+        mask = cv2.resize(mask, (dst.shape[1], dst.shape[1]*mask.shape[0]//mask.shape[1]))
 
     print('y', dst.shape[0], masked.shape[0])
     print('x', dst.shape[1], masked.shape[1])
+
+    y, x = random.randint(0, dst.shape[0] - masked.shape[0]), random.randint(0, dst.shape[1] - masked.shape[1])
 
     adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
     adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
@@ -214,6 +231,21 @@ with torch.no_grad():
 
         adapted[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
         adapted_guide[y:y+masked.shape[0], x:x+masked.shape[1]] = mask
+
+    elif k == ord('m'):
+        y, x = random.randint(0, dst.shape[0] - masked.shape[0]), random.randint(0, dst.shape[1] - masked.shape[1])
+        dst[y:y+masked.shape[0], x:x+masked.shape[1]] = masked
+
+        cv2.destroyAllWindows()
+        cv2.imshow('Destiny', dst)
+        print('Press s to save...')
+        k = cv2.waitKey(0)
+
+        if k == ord('s'):
+            name = f'{src_name.split(".")[0]}_{idx}_to_{dst_name.split(".")[0]}.png'
+            cv2.imwrite(os.path.join(OUTPUT_DIR, name), dst)
+
+        quit()
 
 
 
